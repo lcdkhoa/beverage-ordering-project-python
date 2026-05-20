@@ -1,0 +1,111 @@
+<div class="order-progress-section">
+  <h3 class="order-progress-section-title">Diễn biến đơn hàng</h3>
+  {% if progress.is_cancelled %}
+    <div style="text-align: center; padding: 20px;">
+      <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#dc3545" stroke-width="2" style="margin: 0 auto 15px;">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="15" y1="9" x2="9" y2="15"/>
+        <line x1="9" y1="9" x2="15" y2="15"/>
+      </svg>
+      <p style="color: #dc3545; font-weight: 600; font-size: 16px; margin: 0;">Đơn hàng đã bị hủy</p>
+      <p style="color: #666; font-size: 14px; margin-top: 8px;">{{ order.NgayTaoFormatted }}</p>
+    </div>
+  {% else %}
+    {% set icon_path = 'img/cart/order_result/' %}
+    <div class="order-progress-steps">
+      <div class="order-progress-line"></div>
+      <div class="order-progress-line-active" style="width: {% if progress.step4 %}100%{% elif progress.step3 %}66.67%{% elif progress.step2 %}33.33%{% else %}0%{% endif %}"></div>
+      <div class="order-progress-step {{ 'completed' if progress.step1 else '' }}">
+        <div class="order-progress-icon">
+          <img src="{{ url_for('static', filename=icon_path ~ ('paid.png' if progress.step1 else 'green/order_accepted.png')) }}" alt="Đã nhận thanh toán">
+        </div>
+        <div class="order-progress-label">Đã nhận thanh toán</div>
+        {% if progress.step1 %}<div class="order-progress-date">{{ order.NgayTaoFormatted }}</div>{% endif %}
+      </div>
+      <div class="order-progress-step {{ 'completed' if progress.step2 else '' }}">
+        <div class="order-progress-icon">
+          <img src="{{ url_for('static', filename=icon_path ~ ('white/order_accepted.png' if progress.step2 else 'green/order_accepted.png')) }}" alt="Đã nhận đơn">
+        </div>
+        <div class="order-progress-label">Đã nhận đơn</div>
+      </div>
+      <div class="order-progress-step {{ 'completed' if progress.step3 else '' }}">
+        <div class="order-progress-icon">
+          <img src="{{ url_for('static', filename=icon_path ~ ('white/delivered.png' if progress.step3 else 'green/delivered.png')) }}" alt="Đang giao hàng">
+        </div>
+        <div class="order-progress-label">Đang giao hàng</div>
+      </div>
+      <div class="order-progress-step {{ 'completed' if progress.step4 else '' }}">
+        <div class="order-progress-icon">
+          <img src="{{ url_for('static', filename=icon_path ~ ('white/order_finished.png' if progress.step4 else 'green/order_finished.png')) }}" alt="Hoàn thành">
+        </div>
+        <div class="order-progress-label">Hoàn thành</div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<div class="order-detail-section collapsible collapsed">
+  <h3 class="order-detail-section-title">Thông tin đơn hàng</h3>
+  <div class="order-detail-section-content">
+    <div class="order-detail-info-grid">
+      <div class="info-item"><span class="info-label">Mã đơn hàng:</span> <span class="info-value">{{ order.OrderCode }}</span></div>
+      <div class="info-item"><span class="info-label">Thời gian đặt hàng:</span> <span class="info-value">{{ order.NgayTaoFormatted }}</span></div>
+      <div class="info-item"><span class="info-label">Trạng thái:</span> <span class="order-detail-status status-{{ progress.status_class }}">{{ progress.status_text }}</span></div>
+      <div class="info-item"><span class="info-label">Hình thức thanh toán:</span> <span class="info-value">{{ order.PaymentMethod }}</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="order-detail-section collapsible collapsed">
+  <h3 class="order-detail-section-title">Thông tin nhận hàng</h3>
+  <div class="order-detail-section-content">
+    <div class="order-detail-info-grid">
+      <div class="info-item"><span class="info-label">Họ và tên:</span> <span class="info-value">{{ order.NguoiNhan or "" }}</span></div>
+      <div class="info-item"><span class="info-label">Số điện thoại:</span> <span class="info-value">{{ order.DienThoaiGiao or "" }}</span></div>
+      <div class="info-item full"><span class="info-label">Địa chỉ nhận hàng:</span> <span class="info-value">{{ order.DiaChiGiao or "" }}</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="order-detail-section collapsible collapsed">
+  <h3 class="order-detail-section-title">Sản phẩm ({{ order["items"] | length }})</h3>
+  <div class="order-detail-section-content">
+    <div class="order-detail-products">
+      {% for item in order["items"] %}
+        {% set image = item.HinhAnh or 'assets/img/products/product_one.png' %}
+        {% set static_image = image[7:] if image.startswith('assets/') else image %}
+        {% set unit_price = ((item.ItemTotal | float) / (item.SoLuong | int)) if (item.SoLuong | int) > 0 else (item.GiaCoBan | float) %}
+        <div class="order-detail-product">
+          <div class="order-detail-product-img">
+            <img src="{{ url_for('static', filename=static_image) }}" alt="{{ item.TenSP }}">
+          </div>
+          <div class="order-detail-product-info">
+            <p class="order-detail-product-name">x{{ item.SoLuong }} {{ item.TenSP }}</p>
+            {% if item.options %}
+              <div class="order-detail-item-options">
+                {% for option in item.options %}
+                  {{ "+ " if option.GiaThem and option.GiaThem > 0 else "" }}{{ option.TenGiaTri }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+            <div class="order-detail-product-price">
+              <span class="order-detail-item-current-price">{{ unit_price | currency }}</span>
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <p>Không có sản phẩm</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="order-detail-section">
+  <h3 class="order-detail-section-title">Số tiền thanh toán</h3>
+  <div class="order-detail-summary">
+    <div class="order-detail-summary-row"><span class="info-label">Tạm tính:</span> <span class="info-value">{{ order.Subtotal | currency }}</span></div>
+    <div class="order-detail-summary-row"><span class="info-label">Phí vận chuyển:</span> <span class="info-value">{{ order.PhiVanChuyen | currency }}</span></div>
+    <div class="order-detail-summary-row"><span class="info-label">Khuyến mãi:</span> <span class="info-value">{% if order.GiamGia and order.GiamGia > 0 %}-{% endif %}{{ order.GiamGia | currency }}</span></div>
+    <div class="order-detail-summary-row total"><span class="info-label">Số tiền thanh toán:</span> <span class="info-value">{{ order.TongTien | currency }}</span></div>
+  </div>
+</div>

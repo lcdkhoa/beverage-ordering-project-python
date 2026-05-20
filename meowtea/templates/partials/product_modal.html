@@ -1,0 +1,75 @@
+<div id="product-customize-modal" class="product-customize-modal">
+  <div class="modal-overlay"></div>
+  <div class="modal-side-panel">
+    <button type="button" id="close-modal-btn" class="modal-close-btn" aria-label="Đóng">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <div class="modal-content">
+      <div id="modal-loading" class="modal-loading">
+        <p>Đang tải...</p>
+      </div>
+
+      <div id="modal-product-content" style="display: none;">
+        <div class="modal-product-image-wrapper">
+          <img id="modal-product-image" src="" alt="" class="modal-product-image">
+        </div>
+
+        <div class="modal-product-info">
+          <h2 id="modal-product-name"></h2>
+          <div class="modal-product-price">
+            <span id="modal-current-price" class="modal-current-price"></span>
+            <span id="modal-old-price" class="modal-old-price"></span>
+          </div>
+
+          <div class="quantity-selector">
+            <button type="button" class="quantity-btn" id="modal-decrease-qty">-</button>
+            <input type="hidden" id="modal-quantity" value="1" min="1" max="10">
+            <span id="modal-quantity-display" class="quantity-input" aria-live="polite">1</span>
+            <button type="button" class="quantity-btn" id="modal-increase-qty">+</button>
+          </div>
+
+          <form id="modal-product-form">
+            <input type="hidden" id="modal-product-id" name="product_id">
+            <input type="hidden" id="modal-base-price" name="base_price">
+            <input type="hidden" id="modal-reference-price" name="reference_price">
+
+            <div id="modal-option-groups" style="margin-top: 20px;"></div>
+
+            <div class="note-section">
+              <label for="modal-product-note" class="note-label">Thêm ghi chú</label>
+              <textarea
+                id="modal-product-note"
+                name="note"
+                class="note-textarea"
+                placeholder="Nhập nội dung ghi chú cho quán (nếu có)"
+                maxlength="52"
+              ></textarea>
+              <div class="char-count"><span id="modal-char-count">0</span>/52 ký tự</div>
+            </div>
+
+            <div class="total-price-display">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 20px; font-weight: bold; color: var(--primary-green);">Tổng tiền:</span>
+                <span id="modal-total-price" style="font-size: 28px; font-weight: bold; color: var(--primary-green);"></span>
+              </div>
+            </div>
+
+            {% if can_use_cart %}
+              <div class="product-actions" style="position: fixed; bottom: 0; background-color: var(--white); padding: 20px; border-top: 1px solid var(--border-color);">
+                <button type="button" id="modal-add-to-cart-btn" class="btn-add-cart">Thêm vào giỏ</button>
+                <a href="{{ url_for('web.cart') }}" class="btn-view-cart" style="width: 250px;">Xem giỏ hàng</a>
+              </div>
+            {% else %}
+              <div class="product-actions" style="position: fixed; bottom: 0; background-color: var(--white); padding: 20px; border-top: 1px solid var(--border-color); text-align: center;">
+                <p style="color: var(--text-light); font-size: 14px;">Tài khoản Admin/Staff không thể thêm sản phẩm vào giỏ hàng</p>
+              </div>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

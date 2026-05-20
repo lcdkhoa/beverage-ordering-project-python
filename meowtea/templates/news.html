@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Tin Tức - MeowTea Fresh{% endblock %}
+
+{% block content %}
+  <section class="news-banner-section" id="news-banner-section" style="background-image: url('{{ url_for('static', filename='img/news/news_banner.jpg') }}'); background-size: cover; background-position: center; margin-bottom: 40px;"></section>
+
+  <section class="news-content-section">
+    <div class="container">
+      <h1 class="news-title" style="font-size: 36px; font-weight: bold; color: var(--primary-green); text-align: center; margin-bottom: 40px;">Tin Tức & Sự Kiện</h1>
+
+      {% if items %}
+        <div class="news-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px; margin-bottom: 40px;">
+          {% for news in items %}
+            {% include "partials/news_card.html" %}
+          {% endfor %}
+        </div>
+        {% include "partials/pagination.html" %}
+      {% else %}
+        <div class="no-news" style="text-align: center; padding: 60px 20px;">
+          <p style="font-size: 18px; color: var(--text-light); margin-bottom: 20px;">Chưa có tin tức nào.</p>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/news.js') }}"></script>
+{% endblock %}

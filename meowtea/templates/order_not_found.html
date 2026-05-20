@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Đơn hàng không tồn tại - MeowTea Fresh{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/cart.css') }}">
+{% endblock %}
+
+{% block content %}
+  <main class="order-result-page">
+    <div class="container">
+      <div class="order-not-found">
+        <div class="not-found-icon">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <h1 class="not-found-title">Đơn hàng không tồn tại</h1>
+        <p class="not-found-message">Không tìm thấy đơn hàng với mã <strong>#MTF{{ "%05d" | format(order_id) }}</strong></p>
+        <p class="not-found-description">Đơn hàng có thể đã bị xóa hoặc bạn không có quyền truy cập đơn hàng này.</p>
+        <div class="not-found-actions">
+          <a href="{{ url_for('web.cart') }}" class="btn-back-to-cart">Quay lại giỏ hàng</a>
+          <a href="{{ url_for('web.menu') }}" class="btn-continue-shopping">Tiếp tục mua sắm</a>
+        </div>
+      </div>
+    </div>
+  </main>
+{% endblock %}

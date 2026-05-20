@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}MeowTea Fresh{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    {% block styles %}{% endblock %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  </head>
+  <body id="top">
+    {% include "partials/header.html" %}
+    {% block content %}{% endblock %}
+    {% include "partials/back_to_top.html" %}
+    {% include "partials/footer.html" %}
+    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/snack-bar.js') }}"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

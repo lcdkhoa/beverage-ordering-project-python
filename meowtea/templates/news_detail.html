@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}{{ news.TieuDe }} - MeowTea Fresh{% endblock %}
+
+{% block content %}
+  {% set image_path = news.HinhAnh | default('assets/img/news/news_one.jpg') %}
+  {% set static_image = image_path[7:] if image_path.startswith('assets/') else image_path %}
+  <section class="news-detail-hero" style="background: url('{{ url_for('static', filename=static_image) }}') center/cover; min-height: 360px; display: flex; align-items: flex-end; margin-bottom: 40px;">
+    <div class="container" style="padding-bottom: 48px;">
+      <h1 style="max-width: 860px; color: var(--white); font-size: 42px; line-height: 1.2; text-shadow: 0 2px 12px rgba(0,0,0,.35);">{{ news.TieuDe }}</h1>
+    </div>
+  </section>
+
+  <section class="news-detail-section">
+    <div class="container" style="max-width: 920px;">
+      <article class="news-detail-content" style="color: var(--text-dark); line-height: 1.8; font-size: 17px;">
+        {{ news.ContentHtml }}
+      </article>
+      <div style="margin: 40px 0;">
+        <a href="{{ url_for('web.news') }}" class="btn btn-outline">Quay lại tin tức</a>
+      </div>
+    </div>
+  </section>
+{% endblock %}

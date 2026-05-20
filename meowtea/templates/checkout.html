@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Xác nhận đơn hàng - MeowTea Fresh{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/cart.css') }}">
+{% endblock %}
+
+{% block content %}
+  <main class="checkout-page">
+    <div class="container">
+      <h1 class="checkout-title">Xác nhận đơn hàng</h1>
+
+      <div class="checkout-layout">
+        <div class="checkout-left">
+          <section class="checkout-section">
+            <h2 class="section-title">Thông tin nhận hàng</h2>
+            <div class="delivery-info">
+              <div class="info-row">
+                <span class="info-label">Họ tên:</span>
+                <span class="info-value">{{ user.name }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Số điện thoại:</span>
+                <span class="info-value">{{ user.phone or "" }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Địa chỉ giao hàng:</span>
+                <span class="info-value" id="delivery-address-display">{{ user.dia_chi or "Chưa có địa chỉ" }}</span>
+                <a href="#" class="change-address-link" id="change-address-btn">{{ "Đổi địa chỉ" if user.dia_chi else "Thêm địa chỉ" }}</a>
+              </div>
+              <div class="info-row address-row address-edit-row" id="address-edit-block" style="display: none;">
+                <div class="address-edit-inner">
+                  <textarea class="order-note-input" id="delivery-address-input" placeholder="Nhập địa chỉ giao hàng" maxlength="500" rows="3">{{ user.dia_chi or "" }}</textarea>
+                  <div class="address-edit-actions">
+                    <button type="button" class="btn-save-address" id="btn-save-address">Lưu</button>
+                    <button type="button" class="btn-cancel-address" id="btn-cancel-address">Hủy</button>
+                  </div>
+                </div>
+              </div>
+              <input type="hidden" id="delivery-address" value="{{ user.dia_chi or '' }}">
+            </div>
+          </section>
+
+          <section class="checkout-section">
+            <h2 class="section-title">Giao từ cửa hàng</h2>
+            <div class="store-selection-group">
+              <select class="store-select dropdown-select" id="province-select" name="province">
+                <option value="">Tỉnh/Thành phố</option>
+                <option value="Hồ Chí Minh">Hồ Chí Minh</option>
+                <option value="Hà Nội">Hà Nội</option>
+                <option value="Đà Nẵng">Đà Nẵng</option>
+                <option value="Cần Thơ">Cần Thơ</option>
+              </select>
+              <select class="store-select dropdown-select" id="store-select" name="store_id" required disabled>
+                <option value="">Chọn cửa hàng</option>
+                {% for store in stores %}
+                  <option value="{{ store.MaStore }}" data-phone="{{ store.DienThoai or '' }}" data-address="{{ store.DiaChi or '' }}" data-province="{{ store.Province }}">
+                    {{ store.TenStore }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="store-info" id="store-info" style="display: none;">
+              <p class="store-phone" id="store-phone"></p>
+              <p class="store-address" id="store-address"></p>
+            </div>
+          </section>
+
+          <section class="checkout-section">
+            <h2 class="section-title">Ghi chú đơn hàng</h2>
+            <textarea class="order-note-input" id="order-note" name="order_note" placeholder="Nhập nội dung ghi chú cho đơn hàng (nếu có)" maxlength="52"></textarea>
+            <span class="note-counter">0/52 ký tự</span>
+          </section>
+
+          <section class="checkout-section">
+            <label class="vat-checkbox-label">
+              <input type="checkbox" id="vat-invoice" name="vat_invoice">
+              <span>Tôi muốn xuất hóa đơn VAT</span>
+            </label>
+            <div class="vat-fields" id="vat-fields" style="display: none;">
+              <div class="form-group">
+                <label class="form-label">Email nhận hóa đơn *</label>
+                <input type="email" class="form-input" name="vat_email" placeholder="Nhập Email">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Mã số thuế *</label>
+                <div class="form-group-inline">
+                  <input type="text" class="form-input" name="vat_tax_id" placeholder="Nhập Mã số thuế">
+                  <button type="button" class="btn btn-secondary btn-lookup">Tra cứu</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tên công ty *</label>
+                <input type="text" class="form-input" name="vat_company" placeholder="Nhập tên công ty">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Địa chỉ công ty *</label>
+                <input type="text" class="form-input" name="vat_address" placeholder="Nhập địa chỉ công ty">
+              </div>
+            </div>
+          </section>
+
+          <section class="checkout-section">
+            <h2 class="section-title">Phương thức thanh toán</h2>
+            <div class="payment-methods">
+              {% set payment_icons = {"Ví MoMo": "momo", "Ví ZaloPay": "zalopay", "Thẻ tín dụng": "card", "Chuyển khoản ngân hàng": "bank", "Thanh toán qua ATM": "atm", "Ví điện tử VNPAY": "vnpay", "Momo": "momo", "VNPay": "vnpay", "Chuyển khoản": "bank"} %}
+              {% for method in payment_methods %}
+                <label class="payment-method-option">
+                  <input type="radio" name="payment_method" value="{{ method.MaPayment }}" {% if loop.first %}checked{% endif %}>
+                  <span class="payment-method-name">{{ method.TenPayment }}</span>
+                  {% if method.TenPayment in payment_icons %}
+                    <span class="payment-icon payment-icon-{{ payment_icons[method.TenPayment] }}"></span>
+                  {% endif %}
+                </label>
+              {% endfor %}
+            </div>
+          </section>
+        </div>
+
+        <div class="checkout-right">
+          <div class="order-summary-card">
+            <div class="summary-header">
+              <h2 class="summary-title">Các món đã chọn</h2>
+              <a href="{{ url_for('web.menu') }}" class="add-item-link">Thêm món</a>
+            </div>
+
+            <div class="summary-items">
+              {% for item in cart_items %}
+                {% set product_image = item.product_image or 'assets/img/products/product_one.png' %}
+                {% set static_image = product_image[7:] if product_image.startswith('assets/') else product_image %}
+                {% set quantity = item.quantity | int %}
+                {% set item_total = item.total_price | float %}
+                {% set price_per_unit = (item_total / quantity) if quantity > 0 else item.base_price %}
+                <div class="summary-item">
+                  <div class="summary-item-image">
+                    <img src="{{ url_for('static', filename=static_image) }}" alt="{{ item.product_name }}">
+                  </div>
+                  <div class="summary-item-info">
+                    <h3 class="summary-item-name">{{ item.product_name }}</h3>
+                    {% if item.options %}
+                      <div class="summary-item-options">
+                        {% for option in item.options %}
+                          <span class="option-tag-small">
+                            {% if option.group_name %}{{ option.group_name }}: {% endif %}{{ option.value_name or option.option_name }}
+                          </span>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                    <div class="summary-item-price">
+                      <span class="current-price">{{ price_per_unit | currency }}</span>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+
+            <div class="promotion-section">
+              <label class="promotion-label">Khuyến mãi</label>
+              <div class="promotion-input-wrapper">
+                <div class="promotion-input-container">
+                  <input type="text" class="promotion-input" id="promotion-code" placeholder="Nhập mã khuyến mãi" autocomplete="off">
+                  <span class="promotion-clear-btn" id="promotion-clear-btn" style="display: none;">x</span>
+                </div>
+                <button type="button" class="btn-apply-promotion" id="btn-apply-promotion">Áp dụng</button>
+              </div>
+              <div class="promotion-message" id="promotion-message"></div>
+            </div>
+
+            <div class="payment-summary">
+              <div class="summary-row">
+                <span class="summary-label">Tạm tính</span>
+                <span class="summary-value" id="subtotal">{{ subtotal | currency }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">Phí vận chuyển</span>
+                <span class="summary-value" id="shipping-fee">{{ shipping_fee | currency }}</span>
+              </div>
+              <div class="summary-row promotion-row" id="promotion-row" style="display: none;">
+                <span class="summary-label">Khuyến mãi</span>
+                <span class="summary-value promotion-value" id="promotion-discount">-0₫</span>
+              </div>
+              <div class="summary-row total-row">
+                <span class="summary-label">Số tiền thanh toán</span>
+                <span class="summary-value total-value" id="total-amount">{{ total_amount | currency }}</span>
+              </div>
+            </div>
+
+            <label class="terms-checkbox-label">
+              <input type="checkbox" id="agree-terms" required>
+              <span>Tôi đồng ý với những <a href="#" class="terms-link">điều khoản mua hàng</a> của MeowTea Fresh.</span>
+            </label>
+
+            <button type="button" class="btn-pay-now" id="pay-now-btn">Thanh toán ngay</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  {% include "partials/modal_box.html" %}
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/modal-box.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/checkout.js') }}"></script>
+{% endblock %}

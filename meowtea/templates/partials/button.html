@@ -1,0 +1,10 @@
+{% set button_class = "btn btn-" ~ (type | default("primary")) ~ (" " ~ class if class is defined else "") %}
+{% set style = "border-radius: 30px; height: 40px; display: inline-flex; align-items: center; justify-content: center; padding: 0 20px; line-height: 1;" %}
+{% if width is defined and width != "auto" %}
+  {% set style = style ~ " width: " ~ width ~ ";" %}
+{% endif %}
+{% if href is defined %}
+  <a href="{{ href }}" class="{{ button_class }}" style="{{ style }}">{{ text | default("Button") }}</a>
+{% else %}
+  <button type="{{ button_type | default("button") }}" class="{{ button_class }}" style="{{ style }}">{{ text | default("Button") }}</button>
+{% endif %}

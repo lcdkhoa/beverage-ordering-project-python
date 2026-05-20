@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Menu - MeowTea Fresh{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/menu.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/menu-modal.css') }}">
+{% endblock %}
+
+{% block content %}
+  <section class="menu-hero" id="menu-hero-section">
+    <div class="menu-hero-image">
+      <img src="{{ url_for('static', filename='img/products/product_banner.png') }}" alt="Fresh Juice">
+    </div>
+  </section>
+
+  <section class="menu-content-section" id="menu-content-section">
+    <div class="container">
+      <div class="menu-header">
+        <h1 class="sidebar-title">Menu</h1>
+        <div class="menu-search">
+          <form method="GET" action="{{ url_for('web.menu') }}" class="search-form">
+            {% if category_id %}<input type="hidden" name="category" value="{{ category_id }}">{% endif %}
+            {% if show_best_seller %}<input type="hidden" name="bestseller" value="1">{% endif %}
+            {% if show_topping %}<input type="hidden" name="topping" value="1">{% endif %}
+            <div class="search-input-wrapper">
+              <input
+                type="text"
+                name="search"
+                class="search-input"
+                placeholder="Hôm nay bạn muốn uống gì?"
+                value="{{ keyword }}"
+              >
+              <svg class="search-mic-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+              </svg>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="menu-layout">
+        <aside>
+          <ul class="category-list">
+            <li class="category-item {% if show_best_seller %}active{% endif %}">
+              <a href="?bestseller=1&search={{ keyword | urlencode }}" class="category-link">
+                <span class="category-icon">
+                  <img src="{{ url_for('static', filename='img/products/menu/best_seller.svg') }}" alt="Best Seller" class="category-icon-img">
+                </span>
+              </a>
+            </li>
+            {% for category in categories %}
+              <li class="category-item {% if category_id == category.MaCategory %}active{% endif %}">
+                <a href="?category={{ category.MaCategory }}&search={{ keyword | urlencode }}" class="category-link">
+                  <span class="category-icon">
+                    <img src="{{ url_for('static', filename='img/products/menu/' ~ icon_for_category(category.TenCategory)) }}" alt="{{ category.TenCategory }}" class="category-icon-img">
+                  </span>
+                </a>
+              </li>
+            {% endfor %}
+            <li class="category-item {% if show_topping %}active{% endif %}">
+              <a href="?topping=1&search={{ keyword | urlencode }}" class="category-link">
+                <span class="category-icon">
+                  <img src="{{ url_for('static', filename='img/products/menu/topping.svg') }}" alt="Topping" class="category-icon-img">
+                </span>
+              </a>
+            </li>
+          </ul>
+        </aside>
+
+        <main class="menu-main">
+          <div class="menu-products-section">
+            <h2 class="section-heading" id="menu-section-heading">
+              {{ selected_category_name }}
+              {% if show_topping %}
+                <span class="product-count">({{ total_products }} topping)</span>
+              {% elif total_products > 0 %}
+                <span class="product-count">({{ total_products }} sản phẩm)</span>
+              {% endif %}
+            </h2>
+
+            <div id="menu-products-wrapper"
+                 data-category-id="{{ category_id or '' }}"
+                 data-bestseller="{{ '1' if show_best_seller else '0' }}"
+                 data-topping="{{ '1' if show_topping else '0' }}"
+                 data-page="{{ page }}"
+                 data-per-page="{{ per_page }}">
+              {% include "partials/menu_products.html" %}
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </section>
+
+  {% include "partials/product_modal.html" %}
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/menu.js') }}"></script>
+{% endblock %}

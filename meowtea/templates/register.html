@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Đăng ký - MeowTea Fresh{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+{% endblock %}
+
+{% block content %}
+  <section class="login-section">
+    <div class="container">
+      <div class="login-layout">
+        <div class="login-image-wrapper">
+          <img src="{{ url_for('static', filename='img/stores/stores_banner.png') }}" alt="MeowTea Fresh Cafe" class="login-image">
+        </div>
+
+        <div class="login-form-wrapper" id="registerFormWrapper">
+          <div class="login-form-container">
+            <h1 class="login-title">Tạo tài khoản mới</h1>
+            <p class="login-subtitle">Đăng ký để nhận nhiều ưu đãi hấp dẫn từ MeowTea Fresh!</p>
+
+            <form id="registerForm" class="login-form" method="POST">
+              <div class="form-group-inline-row">
+                <div class="form-group form-group-half">
+                  <label for="ho" class="form-label">Họ <span class="required">*</span></label>
+                  <input type="text" id="ho" name="ho" class="form-input" placeholder="Nhập họ" required maxlength="50" autocomplete="family-name">
+                </div>
+                <div class="form-group form-group-half">
+                  <label for="ten" class="form-label">Tên <span class="required">*</span></label>
+                  <input type="text" id="ten" name="ten" class="form-input" placeholder="Nhập tên" required maxlength="50" autocomplete="given-name">
+                </div>
+              </div>
+
+              <div class="form-group-inline-row">
+                <div class="form-group form-group-half">
+                  <label for="dien_thoai" class="form-label">Số điện thoại</label>
+                  <input type="tel" id="dien_thoai" name="dien_thoai" class="form-input" placeholder="Nhập số điện thoại" maxlength="10" pattern="0[0-9]{9}" autocomplete="tel">
+                </div>
+                <div class="form-group form-group-half">
+                  <label for="email" class="form-label">Email</label>
+                  <input type="email" id="email" name="email" class="form-input" placeholder="Nhập email" maxlength="100" autocomplete="email">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="username" class="form-label">Tên đăng nhập <span class="required">*</span></label>
+                <input type="text" id="username" name="username" class="form-input" placeholder="Nhập tên đăng nhập (3-100 ký tự, chỉ chữ, số và _)" required autocomplete="username" minlength="3" maxlength="100" pattern="[a-zA-Z0-9_]+">
+                <small class="form-hint">Chỉ được chứa chữ cái, số và dấu gạch dưới</small>
+              </div>
+
+              <div class="form-group">
+                <label for="password" class="form-label">Mật khẩu <span class="required">*</span></label>
+                <div class="password-input-wrapper">
+                  <input type="password" id="password" name="password" class="form-input" placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)" required autocomplete="new-password" minlength="6">
+                  <button type="button" class="password-toggle" id="passwordToggle" aria-label="Hiển thị mật khẩu">
+                    <svg class="eye-icon eye-icon-hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <svg class="eye-icon eye-icon-visible" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                      <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"></path>
+                      <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div id="registerMessage" class="login-message" style="display: none;"></div>
+
+              <button type="submit" class="login-btn" id="registerBtn">
+                <span class="btn-text">Đăng ký</span>
+                <span class="btn-loading" style="display: none;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+                    <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="0.75"></path>
+                  </svg>
+                  Đang xử lý...
+                </span>
+              </button>
+            </form>
+
+            <div class="register-link-wrapper">
+              <span class="register-text">Bạn đã có tài khoản?</span>
+              <a href="{{ url_for('web.login_page') }}" class="register-link">Đăng nhập</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="login-form-wrapper" id="otpVerifyWrapper" style="display: none;">
+          <div class="login-form-container">
+            <h1 class="login-title">Xác minh</h1>
+            <p class="login-subtitle">Nhập mã xác minh gồm 6 chữ số được gửi đến <span id="userEmail"></span></p>
+
+            <form id="otpForm" class="login-form">
+              <div class="otp-input-group">
+                {% for index in range(6) %}
+                  <input type="text" class="otp-input" maxlength="1" data-index="{{ index }}" autocomplete="off">
+                {% endfor %}
+              </div>
+
+              <div class="otp-resend-wrapper">
+                <span class="otp-resend-text">Gửi lại mã sau: <span id="otpTimer">60</span>s</span>
+              </div>
+              <div id="otpMessage" class="login-message" style="display: none;"></div>
+
+              <button type="submit" class="login-btn" id="otpVerifyBtn">
+                <span class="btn-text">Đăng ký</span>
+                <span class="btn-loading" style="display: none;">Đang xử lý...</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div class="login-form-wrapper" id="successWrapper" style="display: none;">
+          <div class="login-form-container success-container">
+            <h1 class="login-title">Đăng ký thành công</h1>
+            <p class="login-subtitle">Chúc mừng bạn đã đăng ký tài khoản thành công!</p>
+            <button type="button" class="login-btn" id="backToLoginBtn">
+              <span class="btn-text">Trở về đăng nhập</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/register.js') }}"></script>
+{% endblock %}

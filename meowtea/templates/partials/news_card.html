@@ -1,0 +1,23 @@
+{% set image_path = news.HinhAnh | default('assets/img/news/news_one.jpg') %}
+{% set static_image = image_path[7:] if image_path.startswith('assets/') else image_path %}
+{% set date_parts = (news.NgayTao | string).split(' ') %}
+{% set date_only = date_parts[0].split('-') if date_parts else [] %}
+{% set day = date_only[2] if date_only | length == 3 else '24' %}
+{% set month = date_only[1] if date_only | length == 3 else '12' %}
+
+<div class="news-card">
+  <div class="news-image-wrapper">
+    <img src="{{ url_for('static', filename=static_image) }}" alt="{{ news.TieuDe }}" class="news-image">
+    <div class="news-date-badge">
+      <span class="date-day">{{ day }}</span>
+      <span class="date-month">THG {{ month }}</span>
+    </div>
+  </div>
+  <div class="news-content">
+    <h3 class="news-title">
+      <a href="{{ url_for('web.news_detail', news_id=news.MaNews) }}">{{ news.TieuDe }}</a>
+    </h3>
+    <p class="news-excerpt">{{ news.Excerpt | default('Lorem ipsum dolor sit amet, consectetur adipiscing elit...') }}</p>
+    <a href="{{ url_for('web.news_detail', news_id=news.MaNews) }}" class="news-read-more">Đọc tiếp →</a>
+  </div>
+</div>

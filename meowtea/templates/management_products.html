@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý sản phẩm & Topping - MeowTea Fresh{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/management.css') }}">
+{% endblock %}
+
+{% block content %}
+  <section class="management-section">
+    <div class="container">
+      <div class="management-tabs">
+        <button type="button" class="tab-btn active" data-tab="products">Sản phẩm</button>
+        <button type="button" class="tab-btn" data-tab="toppings">Topping</button>
+      </div>
+
+      <div id="products-section" class="management-section-content active">
+        <div class="management-header">
+          <div class="management-header-left">
+            <h1 class="management-title">Quản lý sản phẩm</h1>
+            <p class="management-subtitle">Quản lý danh mục sản phẩm và thông tin chi tiết</p>
+          </div>
+          {% if is_admin %}
+            <button type="button" class="btn btn-primary" id="btn-add-product">Thêm sản phẩm mới</button>
+          {% endif %}
+        </div>
+        <div class="management-content">
+          <div id="products-accordion" class="products-accordion">
+            <div class="loading-spinner">Đang tải...</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="toppings-section" class="management-section-content">
+        <div class="management-header">
+          <div class="management-header-left">
+            <h1 class="management-title">Quản lý Topping</h1>
+            <p class="management-subtitle">Quản lý các loại topping bổ sung cho sản phẩm</p>
+          </div>
+          {% if is_admin %}
+            <button type="button" class="btn btn-primary" id="btn-add-topping">Thêm topping mới</button>
+          {% endif %}
+        </div>
+        <div class="management-content">
+          <div id="toppings-table-wrapper" class="toppings-table-wrapper">
+            <div class="loading-spinner">Đang tải...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% if is_admin %}
+    <div id="add-product-modal" class="modal">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Thêm sản phẩm mới</h2>
+          <button type="button" class="modal-close" id="close-add-modal">x</button>
+        </div>
+        <div class="modal-body">
+          <form id="add-product-form" enctype="multipart/form-data">
+            <div class="form-group"><label for="product-name">Tên sản phẩm <span class="required">*</span></label><input type="text" id="product-name" name="ten_sp" class="form-input" required></div>
+            <div class="form-group"><label for="product-category">Danh mục <span class="required">*</span></label><select id="product-category" name="ma_category" class="form-input dropdown-select" required><option value="">-- Chọn danh mục --</option></select></div>
+            <div class="form-group"><label for="product-price">Giá niêm yết (₫) <span class="required">*</span></label><input type="number" id="product-price" name="gia_niem_yet" class="form-input" min="0" step="1" required></div>
+            <div class="form-group"><label for="product-reference-price">Giá tham khảo (₫)</label><input type="number" id="product-reference-price" name="gia_co_ban" class="form-input" min="0" step="1" placeholder="Để trống = giá niêm yết"></div>
+            <div class="form-group"><label for="product-image">Hình ảnh</label><input type="file" id="product-image" name="hinh_anh" class="form-input" accept="image/*"><div id="image-preview" style="margin-top: 10px; display: none;"><img id="preview-img" src="" alt="Preview" style="max-width: 200px; max-height: 200px;"></div></div>
+            <div class="form-actions"><button type="button" class="btn btn-secondary" id="cancel-add-product">Hủy</button><button type="submit" class="btn btn-primary">Thêm sản phẩm</button></div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div id="edit-price-modal" class="modal">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header"><h2>Điều chỉnh giá bán</h2><button type="button" class="modal-close" id="close-edit-modal">x</button></div>
+        <div class="modal-body">
+          <form id="edit-price-form">
+            <input type="hidden" id="edit-product-id" name="product_id">
+            <div class="form-group"><label for="edit-product-name">Tên sản phẩm</label><input type="text" id="edit-product-name" class="form-input" readonly></div>
+            <div class="form-group"><label for="edit-product-price">Giá bán mới (₫) <span class="required">*</span></label><input type="number" id="edit-product-price" name="price" class="form-input" min="0" step="1" required></div>
+            <div class="form-actions"><button type="button" class="btn btn-secondary" id="cancel-edit-price">Hủy</button><button type="submit" class="btn btn-primary">Cập nhật giá</button></div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div id="add-topping-modal" class="modal">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header"><h2>Thêm topping mới</h2><button type="button" class="modal-close" id="close-add-topping-modal">x</button></div>
+        <div class="modal-body">
+          <form id="add-topping-form" enctype="multipart/form-data">
+            <div class="form-group"><label for="topping-name">Tên topping <span class="required">*</span></label><input type="text" id="topping-name" name="ten_topping" class="form-input" required></div>
+            <div class="form-group"><label for="topping-price">Giá thêm (₫) <span class="required">*</span></label><input type="number" id="topping-price" name="gia_them" class="form-input" min="0" step="1" required></div>
+            <div class="form-group"><label for="topping-image">Hình ảnh</label><input type="file" id="topping-image" name="hinh_anh" class="form-input" accept="image/*"><div id="topping-image-preview" style="margin-top: 10px; display: none;"><img id="topping-preview-img" src="" alt="Preview" style="max-width: 200px; max-height: 200px;"></div></div>
+            <div class="form-actions"><button type="button" class="btn btn-secondary" id="cancel-add-topping">Hủy</button><button type="submit" class="btn btn-primary">Thêm topping</button></div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div id="edit-topping-price-modal" class="modal">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header"><h2>Điều chỉnh giá topping</h2><button type="button" class="modal-close" id="close-edit-topping-modal">x</button></div>
+        <div class="modal-body">
+          <form id="edit-topping-price-form">
+            <input type="hidden" id="edit-topping-id" name="topping_id">
+            <div class="form-group"><label for="edit-topping-name">Tên topping</label><input type="text" id="edit-topping-name" class="form-input" readonly></div>
+            <div class="form-group"><label for="edit-topping-price">Giá thêm mới (₫) <span class="required">*</span></label><input type="number" id="edit-topping-price" name="price" class="form-input" min="0" step="1" required></div>
+            <div class="form-actions"><button type="button" class="btn btn-secondary" id="cancel-edit-topping-price">Hủy</button><button type="submit" class="btn btn-primary">Cập nhật giá</button></div>
+          </form>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/management.js') }}"></script>
+{% endblock %}

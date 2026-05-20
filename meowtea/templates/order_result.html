@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Đặt hàng thành công - MeowTea Fresh{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/cart.css') }}">
+{% endblock %}
+
+{% block content %}
+  <main class="order-result-page">
+    <div class="container">
+      <div class="order-success-header">
+        <h1 class="success-title">Đặt Hàng Thành Công</h1>
+        <p class="order-code-label">Mã đơn hàng của bạn</p>
+        <div class="order-code-badge">{{ order.OrderCode }}</div>
+        <p class="email-notice">Vui lòng kiểm tra hộp thư đến trong email của bạn để xem thông tin chi tiết đơn hàng</p>
+        <p class="email-address">{{ user.email or "email@gmail.com" }}</p>
+      </div>
+
+      <div class="order-progress">
+        {% set icon_path = 'img/cart/order_result/' %}
+        <div class="progress-step {{ 'completed' if progress.step1 else '' }}">
+          <div class="step-icon">
+            <img src="{{ url_for('static', filename=icon_path ~ ('paid.png' if progress.step1 else 'green/order_accepted.png')) }}" alt="Đã nhận thanh toán">
+          </div>
+          <div class="step-info">
+            <p class="step-title">Đã nhận thanh toán</p>
+            <p class="step-time">{{ progress.time if progress.step1 else "-" }}</p>
+          </div>
+        </div>
+        <div class="progress-line {{ 'active' if progress.step1 else '' }}"></div>
+
+        <div class="progress-step {{ 'completed' if progress.step2 else '' }}">
+          <div class="step-icon">
+            <img src="{{ url_for('static', filename=icon_path ~ ('white/order_accepted.png' if progress.step2 else 'green/order_accepted.png')) }}" alt="Đã nhận đơn">
+          </div>
+          <div class="step-info">
+            <p class="step-title">Đã nhận đơn</p>
+            <p class="step-time">{{ progress.time if progress.step2 else "-" }}</p>
+          </div>
+        </div>
+        <div class="progress-line {{ 'active' if progress.step2 else '' }}"></div>
+
+        <div class="progress-step {{ 'completed' if progress.step3 else '' }}">
+          <div class="step-icon">
+            <img src="{{ url_for('static', filename=icon_path ~ ('white/delivered.png' if progress.step3 else 'green/delivered.png')) }}" alt="Đang giao hàng">
+          </div>
+          <div class="step-info">
+            <p class="step-title">Đang giao hàng</p>
+            <p class="step-time">{{ progress.time if progress.step3 else "-" }}</p>
+          </div>
+        </div>
+        <div class="progress-line {{ 'active' if progress.step3 else '' }}"></div>
+
+        <div class="progress-step {{ 'completed' if progress.step4 else '' }}">
+          <div class="step-icon">
+            <img src="{{ url_for('static', filename=icon_path ~ ('white/order_finished.png' if progress.step4 else 'green/order_finished.png')) }}" alt="Hoàn thành">
+          </div>
+          <div class="step-info">
+            <p class="step-title">Hoàn thành</p>
+            <p class="step-time">{{ progress.time if progress.step4 else "-" }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="order-summary-section">
+        <h2 class="summary-section-title">Tóm tắt đơn hàng</h2>
+        <div class="summary-details">
+          <div class="summary-detail-row">
+            <span class="detail-label">Thời gian giao hàng dự kiến</span>
+            <span class="detail-value">{{ estimated_delivery.strftime("%H:%M %d/%m/%Y") }}</span>
+          </div>
+          <div class="summary-detail-row">
+            <span class="detail-label">Phương thức thanh toán</span>
+            <span class="detail-value">{{ order.PaymentMethod or "Tiền mặt" }}</span>
+          </div>
+          <div class="summary-detail-row">
+            <span class="detail-label">Thành tiền</span>
+            <span class="detail-value">{{ order.Subtotal | currency }}</span>
+          </div>
+          <div class="summary-detail-row">
+            <span class="detail-label">Phí vận chuyển</span>
+            <span class="detail-value">{{ order.PhiVanChuyen | currency }}</span>
+          </div>
+          {% if order.GiamGia and order.GiamGia > 0 %}
+            <div class="summary-detail-row">
+              <span class="detail-label">Khuyến mãi</span>
+              <span class="detail-value" style="color: #e74c3c;">-{{ order.GiamGia | currency }}</span>
+            </div>
+          {% endif %}
+          <div class="summary-detail-row total-row">
+            <span class="detail-label">Số tiền thanh toán</span>
+            <span class="detail-value total-value">{{ order.TongTien | currency }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="support-section">
+        <p class="support-text">Bạn cần hỗ trợ về đơn hàng? Vui lòng liên hệ:</p>
+        <p class="support-phone">1900 1111 (miễn phí)</p>
+      </div>
+    </div>
+  </main>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Tuyển dụng - MeowTea Fresh{% endblock %}
+
+{% block styles %}
+  <style>
+    .career-page {
+      padding-top: 40px;
+      padding-bottom: 60px;
+      min-height: 60vh;
+    }
+
+    .career-title {
+      font-size: 48px;
+      font-weight: bold;
+      color: var(--primary-green);
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .career-empty-state {
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .career-empty-message {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 20px;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .career-contact-info {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 30px;
+      margin-top: 40px;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+    }
+
+    .career-contact-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--primary-green);
+      margin-bottom: 15px;
+    }
+
+    .career-contact-text {
+      font-size: 15px;
+      color: var(--text-light);
+      line-height: 1.8;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .career-contact-text strong {
+      color: var(--text-dark);
+    }
+
+    @media (max-width: 768px) {
+      .career-title {
+        font-size: 36px;
+      }
+
+      .career-empty-state {
+        padding: 40px 15px;
+      }
+
+      .career-empty-message {
+        font-size: 20px;
+      }
+
+      .career-contact-info {
+        padding: 20px;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <section class="career-page section">
+    <div class="container">
+      <h1 class="career-title">Tuyển dụng</h1>
+
+      <div class="career-empty-state">
+        <h2 class="career-empty-message">Hiện tại chưa có tin tuyển dụng nào</h2>
+
+        <div class="career-contact-info">
+          <h3 class="career-contact-title">Bạn muốn gửi hồ sơ ứng tuyển?</h3>
+          <p class="career-contact-text">
+            Nếu bạn quan tâm đến cơ hội làm việc tại MeowTea Fresh,
+            vui lòng gửi hồ sơ của bạn đến email: <strong>info@meowteafresh.com</strong>
+            hoặc liên hệ hotline: <strong>1900 1111</strong> để được tư vấn.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

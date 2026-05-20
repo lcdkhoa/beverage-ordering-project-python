@@ -1,0 +1,119 @@
+<header class="main-header">
+  <div class="container">
+    <div class="header-content">
+      <div class="logo">
+        <a href="{{ url_for('web.home') }}">
+          <img src="{{ url_for('static', filename='img/logo.png') }}" alt="MeowTea Fresh" class="logo-img" style="width: 240px; height: 50px;">
+        </a>
+      </div>
+
+      <nav class="main-nav">
+        <ul class="nav-list">
+          <li>
+            {% if active_page == "home" %}
+              <span class="nav-link active">Trang chủ</span>
+            {% else %}
+              <a href="{{ url_for('web.home') }}" class="nav-link">Trang chủ</a>
+            {% endif %}
+          </li>
+          <li>
+            {% if active_page == "menu" %}
+              <span class="nav-link active">Menu</span>
+            {% else %}
+              <a href="{{ url_for('web.menu') }}" class="nav-link">Menu</a>
+            {% endif %}
+          </li>
+          <li>
+            {% if active_page == "stores" %}
+              <span class="nav-link active">Cửa hàng</span>
+            {% else %}
+              <a href="{{ url_for('web.stores') }}" class="nav-link">Cửa hàng</a>
+            {% endif %}
+          </li>
+          <li>
+            {% if active_page == "news" %}
+              <span class="nav-link active">Tin tức</span>
+            {% else %}
+              <a href="{{ url_for('web.news') }}" class="nav-link">Tin tức</a>
+            {% endif %}
+          </li>
+          <li>
+            {% if active_page == "career" %}
+              <span class="nav-link active">Tuyển dụng</span>
+            {% else %}
+              <a href="{{ url_for('web.career') }}" class="nav-link">Tuyển dụng</a>
+            {% endif %}
+          </li>
+          <li>
+            {% if active_page == "about" %}
+              <span class="nav-link active">Về MeowTea Fresh</span>
+            {% else %}
+              <a href="{{ url_for('web.about') }}" class="nav-link">Về MeowTea Fresh</a>
+            {% endif %}
+          </li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        {% if can_use_cart %}
+          <div class="cart-icon">
+            <a href="{{ url_for('web.cart') }}" class="cart-link">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 2L7 6H2v2h1l1 10h12l1-10h1V6h-5L15 2H9z"/>
+              </svg>
+              <span class="cart-text">Giỏ hàng</span>
+              <span class="cart-count">{{ cart_count }}</span>
+            </a>
+          </div>
+          <div class="separator">|</div>
+        {% endif %}
+
+        {% if is_logged_in %}
+          <div class="user-info-wrapper">
+            <div class="user-avatar" title="{{ current_user.name }}">
+              {% set avatar = 'o.png' %}
+              {% if current_user.gioi_tinh == 'M' %}
+                {% set avatar = 'm.jpg' %}
+              {% elif current_user.gioi_tinh == 'F' %}
+                {% set avatar = 'f.jpg' %}
+              {% endif %}
+              <img src="{{ url_for('static', filename='img/avatar/' ~ avatar) }}" alt="{{ current_user.name }}" class="avatar-image">
+            </div>
+            <span class="user-name">{{ current_user.name }}</span>
+            <div class="user-dropdown">
+              <button class="user-dropdown-toggle" aria-label="Menu người dùng">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 9l6 6 6-6"/>
+                </svg>
+              </button>
+              <div class="user-dropdown-menu">
+                <a href="{{ url_for('web.profile') }}" class="dropdown-item"><span>Thông tin tài khoản</span></a>
+                {% if can_use_cart %}
+                  <a href="{{ url_for('web.orders_page') }}" class="dropdown-item"><span>Đơn hàng của tôi</span></a>
+                {% endif %}
+                {% if is_admin %}
+                  <a href="{{ url_for('web.management_products') }}" class="dropdown-item"><span>Quản lý sản phẩm</span></a>
+                  <a href="{{ url_for('web.management_promotions') }}" class="dropdown-item"><span>Quản lý khuyến mãi</span></a>
+                {% endif %}
+                {% if show_management %}
+                  <a href="{{ url_for('web.management_orders') }}" class="dropdown-item"><span>Quản lý đơn hàng</span></a>
+                {% endif %}
+                <a href="{{ url_for('web.logout_page') }}" class="dropdown-item"><span>Đăng xuất</span></a>
+              </div>
+            </div>
+          </div>
+        {% else %}
+          <div class="login-icon">
+            <a href="{{ url_for('web.login_page') }}" class="login-link">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <span class="login-text">Đăng nhập</span>
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,82 @@
+<div id="infoTab" class="profile-tab active">
+  <div class="profile-tab-header">
+    <h1 class="profile-tab-title">Thông tin cá nhân</h1>
+    <p class="profile-tab-subtitle">Xem và quản lý thông tin tài khoản của bạn</p>
+  </div>
+
+  <div class="profile-form-card">
+    <form id="updateProfileForm" class="profile-form" method="POST">
+      <div class="form-section collapsible">
+        <h3 class="form-section-title collapsible-header" data-target="account-info">
+          <span class="section-title-text">Thông tin tài khoản</span>
+          <svg class="collapse-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </h3>
+        <div id="account-info" class="collapsible-content active">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="username" class="form-label">Tên đăng nhập</label>
+              <input type="text" id="username" name="username" class="form-input form-input-readonly" value="{{ user.username }}" readonly disabled>
+            </div>
+            <div class="form-group">
+              <label for="gioi_tinh" class="form-label">Giới tính</label>
+              <select id="gioi_tinh" name="gioi_tinh" class="form-input dropdown-select">
+                <option value="">-- Chọn giới tính --</option>
+                <option value="M" {% if user.gioi_tinh == 'M' %}selected{% endif %}>Nam</option>
+                <option value="F" {% if user.gioi_tinh == 'F' %}selected{% endif %}>Nữ</option>
+                <option value="O" {% if user.gioi_tinh == 'O' %}selected{% endif %}>Khác</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ho" class="form-label">Họ</label>
+              <input type="text" id="ho" name="ho" class="form-input form-input-readonly" value="{{ user.ho or '' }}" readonly disabled>
+            </div>
+            <div class="form-group">
+              <label for="ten" class="form-label">Tên</label>
+              <input type="text" id="ten" name="ten" class="form-input form-input-readonly" value="{{ user.ten or '' }}" readonly disabled>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section collapsible">
+        <h3 class="form-section-title collapsible-header" data-target="contact-info">
+          <span class="section-title-text">Thông tin liên hệ</span>
+          <svg class="collapse-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </h3>
+        <div id="contact-info" class="collapsible-content active">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" id="email" name="email" class="form-input" placeholder="Nhập địa chỉ email" value="{{ user.email or '' }}" maxlength="100" autocomplete="email">
+            </div>
+            <div class="form-group">
+              <label for="dien_thoai" class="form-label">Số điện thoại</label>
+              <input type="tel" id="dien_thoai" name="dien_thoai" class="form-input" placeholder="Nhập số điện thoại" value="{{ user.phone or '' }}" maxlength="20" autocomplete="tel">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="dia_chi" class="form-label">Địa chỉ</label>
+            <textarea id="dia_chi" name="dia_chi" class="form-input form-textarea {% if user.role_name != 'Customer' %}form-input-readonly{% endif %}" placeholder="{% if user.role_name == 'Customer' %}Nhập địa chỉ của bạn{% endif %}" rows="3" maxlength="500" {% if user.role_name != 'Customer' %}readonly disabled{% endif %}>{{ user.dia_chi or "" }}</textarea>
+            {% if user.role_name == "Customer" %}
+              <small class="form-hint">Địa chỉ này sẽ được sử dụng làm địa chỉ giao hàng mặc định</small>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div id="updateProfileMessage" class="login-message" style="display: none;"></div>
+      <div class="form-actions">
+        <button type="submit" class="login-btn" id="updateProfileBtn">
+          <span class="btn-text">Lưu thay đổi</span>
+          <span class="btn-loading" style="display: none;">Đang xử lý...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

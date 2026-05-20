@@ -1,0 +1,20 @@
+{% if products %}
+  <div class="products-grid">
+    {% for product in products %}
+      {% include "partials/product_card.html" %}
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="no-products">
+    <p>Không tìm thấy sản phẩm nào.</p>
+    {% set text = "Xem tất cả sản phẩm" %}
+    {% set type = "primary" %}
+    {% set href = url_for('web.menu') %}
+    {% set width = "auto" %}
+    {% include "partials/button.html" %}
+  </div>
+{% endif %}
+
+{% if not show_best_seller and not show_topping %}
+  {% include "partials/pagination.html" %}
+{% endif %}

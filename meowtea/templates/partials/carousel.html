@@ -1,0 +1,77 @@
+{% if carousel_images %}
+  {% set total_images = carousel_images | length %}
+  <div class="carousel-container" id="{{ carousel_id | default('hero-carousel') }}">
+    <div class="carousel-wrapper">
+      <div class="carousel-slides" style="width: {{ total_images * 100 }}%;">
+        {% for image in carousel_images %}
+          <div class="carousel-slide" style="width: {{ 100 / total_images }}%;">
+            <img src="{{ url_for('static', filename=image[7:] if image.startswith('assets/') else image) }}" alt="Slide {{ loop.index }}">
+          </div>
+        {% endfor %}
+      </div>
+      <button class="carousel-btn carousel-prev" aria-label="Previous">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+      <button class="carousel-btn carousel-next" aria-label="Next">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </button>
+    </div>
+    <div class="carousel-pagination">
+      {% for image in carousel_images %}
+        <button class="carousel-dot {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}"></button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    const carousel = document.getElementById('{{ carousel_id | default("hero-carousel") }}');
+    if (!carousel) return;
+    const slidesContainer = carousel.querySelector('.carousel-slides');
+    const dots = carousel.querySelectorAll('.carousel-dot');
+    const prevBtn = carousel.querySelector('.carousel-prev');
+    const nextBtn = carousel.querySelector('.carousel-next');
+    const totalSlides = {{ total_images }};
+    let currentIndex = 0;
+    let autoPlayTimer = null;
+
+    function setHeight() {
+      const header = document.querySelector('.main-header');
+      const headerHeight = header ? header.offsetHeight : 0;
+      carousel.querySelector('.carousel-wrapper').style.height = (window.innerHeight - headerHeight) + 'px';
+    }
+
+    function showSlide(index) {
+      if (index < 0) index = totalSlides - 1;
+      if (index >= totalSlides) index = 0;
+      currentIndex = index;
+      slidesContainer.style.transform = 'translateX(-' + (index * 100 / totalSlides) + '%)';
+      dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
+    }
+
+    function stopAutoPlay() {
+      if (autoPlayTimer) clearInterval(autoPlayTimer);
+      autoPlayTimer = null;
+    }
+
+    function startAutoPlay() {
+      stopAutoPlay();
+      autoPlayTimer = setInterval(() => showSlide(currentIndex + 1), 3000);
+    }
+
+    setHeight();
+    window.addEventListener('resize', setHeight);
+    nextBtn.addEventListener('click', () => { showSlide(currentIndex + 1); startAutoPlay(); });
+    prevBtn.addEventListener('click', () => { showSlide(currentIndex - 1); startAutoPlay(); });
+    dots.forEach((dot, index) => dot.addEventListener('click', () => { showSlide(index); startAutoPlay(); }));
+    carousel.addEventListener('mouseenter', stopAutoPlay);
+    carousel.addEventListener('mouseleave', startAutoPlay);
+    showSlide(0);
+    startAutoPlay();
+  })();
+  </script>
+{% endif %}
