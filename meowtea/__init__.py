@@ -21,11 +21,10 @@ def set_sqlite_pragma(dbapi_connection, _connection_record):
 
 def create_app(config_object=Config):
     package_dir = Path(__file__).resolve().parent
-    project_root = package_dir.parent.parent
 
     app = Flask(
         __name__,
-        static_folder=str(project_root / "assets"),
+        static_folder=str(package_dir / "assets"),
         static_url_path="/assets",
         template_folder=str(package_dir / "templates"),
     )

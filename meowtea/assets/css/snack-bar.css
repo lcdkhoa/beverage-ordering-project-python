@@ -1,0 +1,168 @@
+/* Snack-bar container - positioned at top right */
+.snack-bar-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 400px;
+    pointer-events: none;
+}
+
+/* Individual snack-bar item */
+.snack-bar {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 16px 16px 16px 22px;
+    /* Extra left padding to account for colored bar */
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    position: relative;
+    pointer-events: auto;
+    animation: slideInRight 0.3s ease-out;
+    min-width: 320px;
+    max-width: 400px;
+}
+
+/* Left colored bar */
+.snack-bar::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    border-radius: 8px 0 0 8px;
+}
+
+/* Variant colors */
+.snack-bar.snack-bar-warm::before {
+    background-color: #F59E0B;
+}
+
+.snack-bar.snack-bar-success::before {
+    background-color: #10B981;
+}
+
+.snack-bar.snack-bar-failed::before {
+    background-color: #EF4444;
+}
+
+.snack-bar.snack-bar-information::before {
+    background-color: #3B82F6;
+}
+
+/* Icon wrapper */
+.snack-bar-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Content wrapper */
+.snack-bar-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Title */
+.snack-bar-title {
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1.4;
+    color: #333333;
+    margin: 0;
+}
+
+/* Message */
+.snack-bar-message {
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #666666;
+    margin: 0;
+    word-wrap: break-word;
+}
+
+/* Close button */
+.snack-bar-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999999;
+    transition: color 0.2s ease;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.snack-bar-close:hover {
+    color: #333333;
+}
+
+.snack-bar-close svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Slide in animation */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Slide out animation */
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.snack-bar.snack-bar-closing {
+    animation: slideOutRight 0.3s ease-out forwards;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .snack-bar-container {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+
+    .snack-bar {
+        min-width: auto;
+        max-width: none;
+        width: 100%;
+    }
+}

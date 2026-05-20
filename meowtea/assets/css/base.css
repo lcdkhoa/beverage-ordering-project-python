@@ -1,0 +1,143 @@
+/* ===== RESET & BASE ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary-green: #1a4d2e;
+  --light-green: #E8EDE8;
+  --cream: #f5f5dc;
+  --white: #ffffff;
+  --text-dark: #333333;
+  --text-light: #666666;
+  --border-color: #e0e0e0;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --bg-light: #f5f5f5;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text-dark);
+  line-height: 1.6;
+  background-color: var(--white);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ===== SECTION STYLES ===== */
+.section {
+  padding: 60px 0;
+}
+
+.section-title {
+  font-size: 36px;
+  font-weight: bold;
+  color: var(--primary-green);
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.section-subtitle {
+  text-align: center;
+  color: var(--text-light);
+  margin-bottom: 30px;
+}
+
+/* ===== BACK TO TOP ===== */
+.back-to-top {
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* Background variants */
+.back-to-top.bg-light-green {
+  background-color: var(--light-green);
+}
+
+.back-to-top.bg-white {
+  background-color: var(--white);
+}
+
+.back-to-top.bg-transparent,
+.back-to-top:not(.bg-light-green):not(.bg-white) {
+  background-color: transparent;
+}
+
+.back-to-top-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary-green);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  background: transparent;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 30px;
+}
+
+.back-to-top-link:hover {
+
+  transform: translateY(-3px);
+}
+
+.back-to-top-link svg {
+  flex-shrink: 0;
+}
+
+/* ===== COMMON FORM CONTROLS ===== */
+.dropdown-select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 30px;
+  font-size: 14px;
+  font-family: inherit;
+  background-color: var(--white);
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dropdown-select:focus {
+  outline: none;
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 3px rgba(26, 77, 46, 0.1);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .container {
+    padding: 0 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 40px 0;
+  }
+
+  .section-title {
+    font-size: 28px;
+  }
+}

@@ -1,0 +1,120 @@
+/* ===== CAROUSEL COMPONENT ===== */
+.carousel-container {
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.carousel-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.carousel-slides {
+  display: flex;
+  height: 100%;
+  transition: transform 1s ease-in-out;
+}
+
+.carousel-slide {
+  flex-shrink: 0;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.carousel-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Navigation Buttons */
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #1a4d2e;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.carousel-btn:hover {
+  background-color: rgba(255, 255, 255, 1);
+  border-color: rgba(255, 255, 255, 1);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.carousel-prev {
+  left: 20px;
+}
+
+.carousel-next {
+  right: 20px;
+}
+
+.carousel-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Pagination Dots */
+.carousel-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+.carousel-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #1a4d2e;
+  background-color: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+.carousel-dot:hover {
+  background-color: rgba(26, 77, 46, 0.3);
+  transform: scale(1.2);
+}
+
+.carousel-dot.active {
+  background-color: #1a4d2e;
+  width: 16px;
+  height: 16px;
+}
+
+/* Full Width Carousel for Hero Section */
+.hero-section {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.hero-section .carousel-container {
+  width: 100%;
+  margin: 0;
+}

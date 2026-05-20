@@ -1,0 +1,181 @@
+/* ===== PROMOTIONS TABLE ===== */
+.promotions-table-wrapper {
+  overflow-x: auto;
+}
+
+.promotions-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--white);
+}
+
+.promotions-table thead {
+  background-color: var(--primary-green);
+  color: var(--white);
+}
+
+.promotions-table th {
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.promotions-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 14px;
+}
+
+.promotions-table tbody tr:hover {
+  background-color: var(--light-green);
+}
+
+.promotions-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ===== PROMOTION DATA DISPLAY ===== */
+.promotion-code {
+  font-weight: 600;
+  color: var(--primary-green);
+  font-family: 'Courier New', monospace;
+}
+
+.promotion-type {
+  color: var(--text-color);
+}
+
+.promotion-value {
+  font-weight: 600;
+  color: var(--primary-green);
+}
+
+.promotion-date {
+  color: var(--text-color);
+  font-size: 13px;
+}
+
+/* ===== STATUS BADGE ===== */
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge.status-active {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.status-inactive {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-edit,
+.btn-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-edit {
+  background-color: var(--primary-green);
+  color: var(--white);
+}
+
+.btn-edit:hover {
+  background-color: #0f3a1f;
+}
+
+.btn-delete {
+  background-color: #dc3545;
+  color: var(--white);
+}
+
+.btn-delete:hover {
+  background-color: #c82333;
+}
+
+.btn-edit svg,
+.btn-delete svg {
+  flex-shrink: 0;
+}
+
+/* ===== FORM STYLES ===== */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 14px;
+}
+
+.form-group .required {
+  color: #dc3545;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary-green);
+}
+
+.form-help {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #6c757d;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .promotions-table {
+    font-size: 12px;
+  }
+
+  .promotions-table th,
+  .promotions-table td {
+    padding: 10px 8px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .btn-edit,
+  .btn-delete {
+    width: 100%;
+    justify-content: center;
+  }
+}

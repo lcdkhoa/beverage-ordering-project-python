@@ -3,7 +3,7 @@ from pathlib import Path
 
 PACKAGE_DIR = Path(__file__).resolve().parent
 MIGRATION_DIR = PACKAGE_DIR.parent
-PROJECT_ROOT = MIGRATION_DIR.parent
+PROJECT_ROOT = PACKAGE_DIR
 INSTANCE_DIR = MIGRATION_DIR / "instance"
 
 

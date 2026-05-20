@@ -1,0 +1,83 @@
+/* ===== PAGINATION ===== */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 40px 0;
+    flex-wrap: wrap;
+}
+
+.pagination-numbers {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Pagination number buttons - Circular shape */
+.pagination-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: var(--white);
+    color: var(--primary-green);
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    /* Circular shape */
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+/* AJAX mode: button.pagination-number reset to match link style */
+button.pagination-number {
+    font: inherit;
+}
+
+.pagination-number:hover {
+    border-color: var(--primary-green);
+    background-color: var(--light-green);
+    transform: translateY(-2px);
+}
+
+.pagination-number.active {
+    background-color: var(--primary-green);
+    color: var(--white);
+    border-color: var(--primary-green);
+}
+
+.pagination-dots {
+    padding: 0 5px;
+    color: var(--text-light);
+    font-weight: bold;
+}
+
+.pagination-info {
+    text-align: center;
+    margin-top: 15px;
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+/* Pagination button (prev/next) - uses button component with custom class */
+.pagination-btn {
+    /* Button component already provides base styles */
+    /* Additional pagination-specific styles if needed */
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pagination {
+        gap: 8px;
+    }
+
+    .pagination-number {
+        width: 36px;
+        height: 36px;
+        font-size: 13px;
+    }
+}
