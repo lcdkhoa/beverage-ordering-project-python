@@ -81,7 +81,12 @@ def get_one_admin_route():
 @role_required("Admin", "Staff")
 def update_status_route():
     try:
-        payload = update_order_status(int(request.form.get("order_id") or 0), (request.form.get("action") or "").strip())
+        payload = update_order_status(
+            int(request.form.get("order_id") or 0),
+            (request.form.get("action") or "").strip(),
+            (request.form.get("status") or "").strip(),
+            session.get("user_role_name") or "",
+        )
         return jsonify(success=True, **payload)
     except Exception as exc:
         return jsonify(success=False, message=str(exc))

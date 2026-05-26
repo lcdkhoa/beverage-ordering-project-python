@@ -1,4 +1,6 @@
 $(document).ready(function() {
+    const isAdmin = String($('#manageOrdersList').data('is-admin')) === 'true';
+    let currentManageOrdersPage = 1;
 
     loadManageOrders(1);
     loadUserFilter();
@@ -82,6 +84,7 @@ $(document).ready(function() {
 
     function loadManageOrders(page) {
         page = page || 1;
+        currentManageOrdersPage = page;
         var $loading = $('#manageOrdersLoading');
         var $empty = $('#manageOrdersEmpty');
         var $list = $('#manageOrdersList');
@@ -212,19 +215,8 @@ $(document).ready(function() {
             success: function(res) {
                 if (res.success && res.order) {
                     $body.html(renderManageOrderDetail(res.order));
-                    
-
                     initCollapsibleSections();
-                    
-
-                    $('#acceptOrderBtn').on('click', function() {
-                        updateOrderStatus(orderId, 'accept');
-                    });
-                    $('#cancelOrderBtn').on('click', function() {
-                        if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
-                            updateOrderStatus(orderId, 'cancel');
-                        }
-                    });
+                    bindManageOrderDetailActions(orderId, res.order);
                 } else {
                     showSnackBar('failed', res.message || 'Không tải được đơn hàng.');
                     $body.html('<p class="order-detail-error">Không tải được đơn hàng.</p>');
@@ -246,10 +238,48 @@ $(document).ready(function() {
         });
     }
 
+    function bindManageOrderDetailActions(orderId, order) {
+        var $body = $('#manageOrderDetailBody');
+        var initialStatus = normalizeManageStatus(order.TrangThai);
+        var $statusSelect = $body.find('#manageOrderStatusSelect');
+        var $statusActions = $body.find('#manageOrderStatusActions');
+
+        $body.find('#acceptOrderBtn').on('click', function() {
+            updateOrderStatus(orderId, { action: 'accept' });
+        });
+
+        $body.find('#cancelOrderBtn').on('click', function() {
+            if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
+                updateOrderStatus(orderId, { action: 'cancel' });
+            }
+        });
+
+        if (!$statusSelect.length || !$statusActions.length) {
+            return;
+        }
+
+        $statusSelect.on('change', function() {
+            $statusActions.toggleClass('active', $(this).val() !== initialStatus);
+        });
+
+        $body.find('#cancelManageStatusBtn').on('click', function() {
+            $statusSelect.val(initialStatus);
+            $statusActions.removeClass('active');
+        });
+
+        $body.find('#confirmManageStatusBtn').on('click', function() {
+            var selectedStatus = $statusSelect.val();
+            if (!selectedStatus || selectedStatus === initialStatus) {
+                $statusActions.removeClass('active');
+                return;
+            }
+            updateOrderStatus(orderId, { status: selectedStatus });
+        });
+    }
+
 
     function renderManageOrderDetail(o) {
-        var statusClass = getManageStatusClass(o.TrangThai);
-        var statusText = getManageStatusText(o.TrangThai);
+        var statusField = renderManageStatusField(o);
         var basePath = '../../';
         
         var sect1 = '<div class="order-detail-section collapsible">' +
@@ -259,7 +289,7 @@ $(document).ready(function() {
             '<div class="info-item"><span class="info-label">Mã đơn hàng:</span> <span class="info-value">' + escapeHtml(o.OrderCode) + '</span></div>' +
             '<div class="info-item"><span class="info-label">Khách hàng:</span> <span class="info-value">' + escapeHtml(o.CustomerName) + '</span></div>' +
             '<div class="info-item"><span class="info-label">Thời gian đặt hàng:</span> <span class="info-value">' + escapeHtml(o.NgayTaoFormatted) + '</span></div>' +
-            '<div class="info-item"><span class="info-label">Trạng thái:</span> <span class="order-detail-status status-' + statusClass + '">' + escapeHtml(statusText) + '</span></div>' +
+            '<div class="info-item info-item-status"><span class="info-label">Trạng thái:</span> ' + statusField + '</div>' +
             '<div class="info-item"><span class="info-label">Hình thức thanh toán:</span> <span class="info-value">' + escapeHtml(o.PaymentMethod) + '</span></div>' +
             '</div></div></div>';
 
@@ -318,7 +348,7 @@ $(document).ready(function() {
 
 
         var actionsHtml = '';
-        var currentStatus = (o.TrangThai || '').toLowerCase();
+        var currentStatus = normalizeManageStatus(o.TrangThai);
         if (currentStatus === 'payment_received' || currentStatus === 'pending') {
             actionsHtml = '<div class="order-detail-section">' +
                 '<h3 class="order-detail-section-title">Thao tác</h3>' +
@@ -326,31 +356,102 @@ $(document).ready(function() {
                 '<button type="button" id="acceptOrderBtn" class="login-btn" style="background: var(--primary-green);">Chấp nhận đơn</button>' +
                 '<button type="button" id="cancelOrderBtn" class="login-btn" style="background: #dc3545;">Hủy đơn</button>' +
                 '</div></div>';
+        } else if (canEditManageStatus(currentStatus)) {
+            actionsHtml = '<div class="order-detail-section">' +
+                '<h3 class="order-detail-section-title">Thao tác</h3>' +
+                '<div id="manageOrderStatusActions" class="manage-order-status-actions">' +
+                '<button type="button" id="confirmManageStatusBtn" class="login-btn" style="background: var(--primary-green);">Xác nhận thay đổi</button>' +
+                '<button type="button" id="cancelManageStatusBtn" class="login-btn" style="background: #dc3545;">Hủy thay đổi</button>' +
+                '</div></div>';
         }
 
         return sect1 + sect2 + sect3 + sect4 + actionsHtml;
     }
 
 
-    function updateOrderStatus(orderId, action) {
+    function renderManageStatusField(order) {
+        var normalizedStatus = normalizeManageStatus(order.TrangThai);
+        var statusClass = getManageStatusClass(order.TrangThai);
+        var statusText = getManageStatusText(order.TrangThai);
+
+        if (!canEditManageStatus(normalizedStatus)) {
+            return '<span class="order-detail-status status-' + statusClass + '">' + escapeHtml(statusText) + '</span>';
+        }
+
+        return '<div class="manage-order-status-editor">' +
+            '<select id="manageOrderStatusSelect" class="form-input manage-order-status-select" aria-label="Trạng thái đơn hàng">' +
+            buildManageStatusOptions(normalizedStatus) +
+            '</select>' +
+            '</div>';
+    }
+
+    function buildManageStatusOptions(currentStatus) {
+        var allowedStatuses = getAllowedManageStatuses(currentStatus);
+        var options = [
+            { value: 'processing', label: 'Đã nhận đơn' },
+            { value: 'delivering', label: 'Đang vận chuyển' },
+            { value: 'completed', label: 'Hoàn thành' }
+        ];
+
+        return options.map(function(option) {
+            var isSelected = option.value === currentStatus;
+            var isEnabled = allowedStatuses.indexOf(option.value) !== -1;
+            return '<option value="' + option.value + '"' +
+                (isSelected ? ' selected' : '') +
+                (isEnabled ? '' : ' disabled') +
+                '>' + option.label + '</option>';
+        }).join('');
+    }
+
+    function getAllowedManageStatuses(status) {
+        var normalizedStatus = normalizeManageStatus(status);
+        if (normalizedStatus === 'processing') {
+            return ['processing', 'delivering'];
+        }
+        if (normalizedStatus === 'delivering') {
+            return ['delivering', 'completed'];
+        }
+        return [normalizedStatus];
+    }
+
+    function canEditManageStatus(status) {
+        var normalizedStatus = normalizeManageStatus(status);
+        return isAdmin && (normalizedStatus === 'processing' || normalizedStatus === 'delivering');
+    }
+
+    function normalizeManageStatus(status) {
+        var normalizedStatus = (status || '').toLowerCase();
+        if (normalizedStatus === 'order_received') {
+            return 'processing';
+        }
+        return normalizedStatus;
+    }
+
+    function updateOrderStatus(orderId, payload) {
+        var requestData = $.extend({ order_id: orderId }, payload || {});
+        var $actions = $('#manageOrderDetailBody').find('button, select');
+        $actions.prop('disabled', true);
+
         $.ajax({
             url: '/api/order/update-status',
             method: 'POST',
-            data: { order_id: orderId, action: action },
+            data: requestData,
             dataType: 'json',
             success: function(res) {
                 if (res.success) {
                     showSnackBar('success', res.message || 'Cập nhật trạng thái thành công!');
-                    $('#manageOrderDetailModal').hide();
-                    loadManageOrders(1);
+                    loadManageOrders(currentManageOrdersPage);
+                    openManageOrderDetail(orderId);
                 } else {
                     var msg = res.message || 'Cập nhật trạng thái thất bại!';
                     var type = (msg.indexOf('Chỉ có thể') !== -1) ? 'warm' : 'failed';
                     showSnackBar(type, msg);
+                    $actions.prop('disabled', false);
                 }
             },
             error: function() {
                 showSnackBar('failed', 'Có lỗi xảy ra. Vui lòng thử lại.');
+                $actions.prop('disabled', false);
             }
         });
     }

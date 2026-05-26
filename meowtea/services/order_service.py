@@ -1,7 +1,6 @@
 import json
 from datetime import timedelta
 from math import ceil
-from random import randint
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import urlopen
@@ -15,6 +14,23 @@ from ..models import Cart, CartItem, OptionGroup, OptionValue, OrderItem, OrderI
 from ..utils import decimal_to_number, get_full_name
 from .cart_service import clear_cart, get_session_cart, recalculate_cart_prices
 from .promotion_service import validate_promotion
+
+ORDER_STATUS_LABELS = {
+    "payment_received": "Đã nhận thanh toán",
+    "pending": "Đã nhận thanh toán",
+    "processing": "Đã nhận đơn",
+    "order_received": "Đã nhận đơn",
+    "delivering": "Đang vận chuyển",
+    "completed": "Hoàn thành",
+    "cancelled": "Hủy đơn",
+    "store_cancelled": "Hủy đơn",
+}
+
+MANUAL_ORDER_STATUS_TRANSITIONS = {
+    "processing": "Delivering",
+    "order_received": "Delivering",
+    "delivering": "Completed",
+}
 
 
 def _auto_progress_orders():
@@ -290,46 +306,85 @@ def _serialize_order(order: Orders, include_customer: bool = False) -> dict:
     return row
 
 
-def update_order_status(order_id: int, action: str) -> dict:
-    if action not in {"accept", "cancel"}:
-        raise ValueError('Hành động không hợp lệ. Phải là "accept" hoặc "cancel"')
+def _normalize_order_status(status: str) -> str:
+    return (status or "").strip().lower()
 
+
+def _order_status_text(status: str) -> str:
+    return ORDER_STATUS_LABELS.get(_normalize_order_status(status), "Không xác định")
+
+
+def _next_manual_order_status(status: str) -> str | None:
+    return MANUAL_ORDER_STATUS_TRANSITIONS.get(_normalize_order_status(status))
+
+
+def update_order_status(order_id: int, action: str = "", status: str = "", role_name: str = "") -> dict:
     order = Orders.query.get(order_id)
     if not order:
         raise ValueError("Đơn hàng không tồn tại")
-    if order.TrangThai.lower() not in {"payment_received", "pending"}:
-        raise ValueError('Chỉ có thể cập nhật trạng thái đơn hàng đang ở trạng thái "Đã nhận thanh toán"')
 
     now = local_now()
+    normalized_target_status = _normalize_order_status(status)
+    normalized_role_name = _normalize_order_status(role_name)
+
+    if normalized_target_status:
+        if normalized_role_name != "admin":
+            raise ValueError("Chỉ quản trị viên mới được cập nhật trạng thái này")
+
+        next_status = _next_manual_order_status(order.TrangThai)
+        if not next_status:
+            raise ValueError("Trạng thái hiện tại không thể cập nhật theo luồng một chiều")
+
+        if normalized_target_status != _normalize_order_status(next_status):
+            raise ValueError(
+                f'Đơn hàng chỉ có thể chuyển từ "{_order_status_text(order.TrangThai)}" sang "{_order_status_text(next_status)}"'
+            )
+
+        order.TrangThai = next_status
+        if _normalize_order_status(next_status) == "delivering":
+            if order.ThoiDiemNhanDon is None:
+                order.ThoiDiemNhanDon = now
+            order.ThoiDiemGiaoHang = now
+            order.ThoiDiemNhanHang = None
+        elif _normalize_order_status(next_status) == "completed":
+            if order.ThoiDiemNhanDon is None:
+                order.ThoiDiemNhanDon = now
+            if order.ThoiDiemGiaoHang is None:
+                order.ThoiDiemGiaoHang = now
+            order.ThoiDiemNhanHang = now
+        order.ThoiDiemHuyDon = None
+        db.session.commit()
+        return {
+            "message": f'Cập nhật trạng thái đơn hàng thành công: {_order_status_text(order.TrangThai)}',
+            "new_status": order.TrangThai,
+        }
+
+    if action not in {"accept", "cancel"}:
+        raise ValueError('Hành động không hợp lệ. Phải là "accept" hoặc "cancel"')
+
+    if _normalize_order_status(order.TrangThai) not in {"payment_received", "pending"}:
+        raise ValueError('Chỉ có thể cập nhật trạng thái đơn hàng đang ở trạng thái "Đã nhận thanh toán"')
+
     if action == "accept":
-        deliver_at = now + timedelta(minutes=randint(15, 20))
-        complete_at = deliver_at + timedelta(minutes=randint(10, 15))
         order.TrangThai = "Processing"
         order.ThoiDiemNhanDon = now
-        order.ThoiDiemGiaoHang = deliver_at
-        order.ThoiDiemNhanHang = complete_at
+        order.ThoiDiemGiaoHang = None
+        order.ThoiDiemNhanHang = None
         order.ThoiDiemHuyDon = None
-        status_text = "Đã nhận đơn"
-        new_status = "Processing"
     else:
         order.TrangThai = "Store_Cancelled"
         order.ThoiDiemHuyDon = now
         order.ThoiDiemGiaoHang = None
         order.ThoiDiemNhanHang = None
         order.ThoiDiemNhanDon = None
-        status_text = "Đã hủy đơn"
-        new_status = "Store_Cancelled"
     db.session.commit()
 
-    response = {"message": f"Cập nhật trạng thái đơn hàng thành công: {status_text}", "new_status": new_status}
+    response = {
+        "message": f'Cập nhật trạng thái đơn hàng thành công: {_order_status_text(order.TrangThai)}',
+        "new_status": order.TrangThai,
+    }
     if action == "accept":
-        response.update(
-            {
-                "thoi_diem_nhan_don": order.ThoiDiemNhanDon.strftime("%Y-%m-%d %H:%M:%S"),
-                "thoi_diem_giao_hang": order.ThoiDiemGiaoHang.strftime("%Y-%m-%d %H:%M:%S"),
-                "thoi_diem_nhan_hang": order.ThoiDiemNhanHang.strftime("%Y-%m-%d %H:%M:%S"),
-            }
-        )
+        response["thoi_diem_nhan_don"] = order.ThoiDiemNhanDon.strftime("%Y-%m-%d %H:%M:%S")
     else:
         response["thoi_diem_huy_don"] = order.ThoiDiemHuyDon.strftime("%Y-%m-%d %H:%M:%S")
     return response
