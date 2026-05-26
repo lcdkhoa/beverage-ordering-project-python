@@ -8,6 +8,7 @@ from ..models import (
     OptionValue,
     PaymentMethod,
     ProductOptionGroup,
+    ProductOptionValue,
     Promotion,
     Role,
     SanPham,
@@ -15,6 +16,7 @@ from ..models import (
     User,
     UserStore,
 )
+from .migrate_product_options import seed_product_option_values
 
 
 EXPECTED_SEED_COUNTS = {
@@ -27,6 +29,7 @@ EXPECTED_SEED_COUNTS = {
     OptionValue: 12,
     SanPham: 16,
     ProductOptionGroup: 40,
+    ProductOptionValue: 152,
     PaymentMethod: 4,
     Promotion: 2,
     News: 4,
@@ -146,6 +149,11 @@ def seed_database():
     ]
     db.session.add_all([ProductOptionGroup(MaSP=product_id, MaOptionGroup=group_id) for product_id, group_id in links])
     db.session.commit()
+
+    values_by_group: dict[int, list[int]] = {}
+    for option_value in OptionValue.query.order_by(OptionValue.MaOptionValue.asc()).all():
+        values_by_group.setdefault(option_value.MaOptionGroup, []).append(option_value.MaOptionValue)
+    seed_product_option_values(links, values_by_group)
 
     db.session.add_all([PaymentMethod(TenPayment=name) for name in ["Tiền mặt", "Chuyển khoản", "Momo", "VNPay"]])
     db.session.commit()

@@ -1,6 +1,10 @@
 $(document).ready(function () {
   const apiBasePath = getApiBasePath();
   const isAdmin = $("#btn-add-product").length > 0; // Check if add button exists
+  let optionCatalog = [];
+  let productDetailMode = "edit";
+  const DEFAULT_SUGAR_ICE_IDS = [1, 2, 3, 4, 5, 6, 7];
+  const TOPPING_GROUP_ID = 3;
 
 
   $(".tab-btn").on("click", function () {
@@ -34,9 +38,9 @@ $(document).ready(function () {
 
   loadProducts();
 
-
   if (isAdmin) {
     loadCategories();
+    loadOptionCatalog();
   }
 
 
@@ -45,6 +49,23 @@ $(document).ready(function () {
 
     if (isAdmin) {
       loadCategories();
+      if (!optionCatalog.length) {
+        loadOptionCatalog(function () {
+          renderProductOptionsPicker(
+            $("#add-product-options"),
+            optionCatalog,
+            DEFAULT_SUGAR_ICE_IDS.slice(),
+            { inputName: "option_value_ids[]" }
+          );
+        });
+      } else {
+        renderProductOptionsPicker(
+          $("#add-product-options"),
+          optionCatalog,
+          DEFAULT_SUGAR_ICE_IDS.slice(),
+          { inputName: "option_value_ids[]" }
+        );
+      }
     }
     $("#add-product-modal").addClass("active");
 
@@ -70,33 +91,20 @@ $(document).ready(function () {
 
 
   $(document).on("click", ".btn-edit-product", function () {
-    const productId = $(this).data("product-id");
-    const productName = $(this).data("product-name");
-    const currentPrice = $(this).data("product-price");
-    const productImage = $(this).data("product-image");
-
-    $("#edit-product-id").val(productId);
-    $("#edit-product-name").val(productName);
-    $("#edit-product-price").val(currentPrice);
-    $("#edit-product-image").val("");
-    $("#edit-product-image").data("current-src", resolveImageSrc(productImage));
-    $("#edit-product-preview-img").attr("src", resolveImageSrc(productImage));
-    $("#edit-product-image-preview").show();
-    $("#edit-product-modal").addClass("active");
+    openProductDetailModal($(this).data("product-id"), "edit");
   });
 
-  $("#close-edit-product-modal, #cancel-edit-product, .modal-overlay").on(
-    "click",
-    function (e) {
-      if (
-        $(e.target).hasClass("modal-overlay") ||
-        $(e.target).closest(".modal-close").length ||
-        $(e.target).attr("id") === "cancel-edit-product"
-      ) {
-        $("#edit-product-modal").removeClass("active");
-      }
-    }
-  );
+  $(document).on("click", ".btn-view-product", function () {
+    openProductDetailModal($(this).data("product-id"), "view");
+  });
+
+  $("#close-edit-product-modal, #cancel-edit-product").on("click", function () {
+    $("#edit-product-modal").removeClass("active");
+  });
+
+  $("#edit-product-modal .modal-overlay").on("click", function () {
+    $("#edit-product-modal").removeClass("active");
+  });
 
 
   $(document).on("keydown", function (e) {
@@ -105,6 +113,45 @@ $(document).ready(function () {
     }
   });
 
+  $(document).on("click", ".option-select-all", function (event) {
+    event.stopPropagation();
+    const groupId = $(this).data("group-id");
+    const $container = $(this).closest(".product-options-picker");
+    $container
+      .find('.option-chip-item[data-group-id="' + groupId + '"] input[type="checkbox"]')
+      .prop("checked", true)
+      .each(function () {
+        $(this).closest(".option-chip-item").addClass("is-checked");
+      });
+    updateOptionGroupCount($container, groupId);
+    refreshProductDetailSummary($container);
+  });
+
+  $(document).on("click", ".option-clear-all", function (event) {
+    event.stopPropagation();
+    const groupId = $(this).data("group-id");
+    const $container = $(this).closest(".product-options-picker");
+    $container
+      .find('.option-chip-item[data-group-id="' + groupId + '"] input[type="checkbox"]')
+      .prop("checked", false)
+      .each(function () {
+        $(this).closest(".option-chip-item").removeClass("is-checked");
+      });
+    updateOptionGroupCount($container, groupId);
+    refreshProductDetailSummary($container);
+  });
+
+  $(document).on("change", ".option-chip-item input[type='checkbox']", function () {
+    const $item = $(this).closest(".option-chip-item");
+    $item.toggleClass("is-checked", this.checked);
+    const $container = $(this).closest(".product-options-picker");
+    updateOptionGroupCount($container, $item.data("group-id"));
+    refreshProductDetailSummary($container);
+  });
+
+  $(document).on("click", ".product-detail-tab", function () {
+    switchProductDetailTab($(this).data("detail-tab"));
+  });
 
 
   $("#btn-add-topping").on("click", function () {
@@ -246,7 +293,7 @@ $(document).ready(function () {
   });
 
   $("#edit-product-image").on("change", function () {
-    updateImagePreview($(this), $("#edit-product-image-preview"), $("#edit-product-preview-img"));
+    updateImagePreview($(this), null, $("#edit-product-preview-img"));
   });
 
 
@@ -285,6 +332,10 @@ $(document).ready(function () {
     if (imageFile) {
       formData.append("hinh_anh", imageFile);
     }
+
+    getSelectedOptionValueIds($("#add-product-options")).forEach(function (optionValueId) {
+      formData.append("option_value_ids[]", optionValueId);
+    });
 
 
     $.ajax({
@@ -332,10 +383,16 @@ $(document).ready(function () {
   $("#edit-product-form").on("submit", function (e) {
     e.preventDefault();
 
+    if (productDetailMode === "view") {
+      $("#edit-product-modal").removeClass("active");
+      return;
+    }
+
     const productId = $("#edit-product-id").val();
     const productName = $("#edit-product-name").val().trim();
     const productPrice = $("#edit-product-price").val();
     const imageFile = $("#edit-product-image")[0].files[0];
+    const selectedIds = getSelectedOptionValueIds($("#edit-product-options"));
 
     if (!productName) {
       showSnackBar("failed", "Vui lòng nhập tên sản phẩm");
@@ -355,6 +412,8 @@ $(document).ready(function () {
       formData.append("hinh_anh", imageFile);
     }
 
+    const $submitBtn = $("#edit-product-submit-btn");
+    $submitBtn.prop("disabled", true).text("Đang lưu...");
 
     $.ajax({
       url: apiBasePath + "update-product",
@@ -364,18 +423,40 @@ $(document).ready(function () {
       contentType: false,
       dataType: "json",
       success: function (response) {
-        if (response.success) {
-          showSnackBar("success", response.message);
-          $("#edit-product-modal").removeClass("active");
-          $("#edit-product-form")[0].reset();
-          loadProducts(); // Reload products list
-        } else {
+        if (!response.success) {
           showSnackBar("failed", response.message || "Có lỗi xảy ra");
+          $submitBtn.prop("disabled", false).text("Cập nhật sản phẩm");
+          return;
         }
+
+        $.ajax({
+          url: apiBasePath + "update-product-options",
+          method: "POST",
+          traditional: true,
+          data: {
+            product_id: productId,
+            "option_value_ids[]": selectedIds,
+          },
+          dataType: "json",
+          success: function (optionsResponse) {
+            $submitBtn.prop("disabled", false).text("Cập nhật sản phẩm");
+            if (optionsResponse.success) {
+              showSnackBar("success", "Cập nhật sản phẩm thành công");
+              $("#edit-product-modal").removeClass("active");
+              loadProducts();
+            } else {
+              showSnackBar("failed", optionsResponse.message || "Có lỗi khi lưu tùy chọn");
+            }
+          },
+          error: function () {
+            $submitBtn.prop("disabled", false).text("Cập nhật sản phẩm");
+            showSnackBar("failed", "Có lỗi xảy ra khi lưu tùy chọn sản phẩm.");
+          },
+        });
       },
-      error: function (xhr, status, error) {
-        console.error("Error:", error);
-        showSnackBar("failed", "Có lỗi xảy ra khi cập nhật sản phẩm. Vui lòng thử lại.");
+      error: function () {
+        $submitBtn.prop("disabled", false).text("Cập nhật sản phẩm");
+        showSnackBar("failed", "Có lỗi xảy ra khi cập nhật sản phẩm.");
       },
     });
   });
@@ -486,6 +567,251 @@ $(document).ready(function () {
     });
   });
 
+
+  function loadOptionCatalog(callback) {
+    $.ajax({
+      url: apiBasePath + "option-catalog",
+      method: "GET",
+      dataType: "json",
+      success: function (response) {
+        if (response.success) {
+          optionCatalog = response.data || [];
+          if (typeof callback === "function") {
+            callback(optionCatalog);
+          }
+        } else if (typeof callback === "function") {
+          callback([]);
+        }
+      },
+      error: function () {
+        if (typeof callback === "function") {
+          callback([]);
+        }
+      },
+    });
+  }
+
+  function openProductDetailModal(productId, mode) {
+    productDetailMode = mode === "view" ? "view" : "edit";
+    const isViewMode = productDetailMode === "view";
+
+    $("#edit-product-id").val(productId);
+    $("#edit-product-name").val("");
+    $("#edit-product-price").val("");
+    $("#edit-product-image").val("");
+    $("#edit-product-summary").empty();
+    $("#edit-product-options").html('<div class="loading-spinner">Đang tải...</div>');
+    switchProductDetailTab("info");
+    setProductDetailModalMode(isViewMode);
+    $("#edit-product-modal").addClass("active");
+
+    $.ajax({
+      url: apiBasePath + "product-options",
+      method: "GET",
+      data: { product_id: productId },
+      dataType: "json",
+      success: function (response) {
+        if (!response.success) {
+          showSnackBar("failed", response.message || "Không thể tải thông tin sản phẩm");
+          $("#edit-product-modal").removeClass("active");
+          return;
+        }
+
+        const config = response.data || {};
+        const product = config.product || {};
+        const imagePath = product.HinhAnh || "assets/img/products/product_one.png";
+
+        optionCatalog = config.catalog || optionCatalog;
+        $("#edit-product-name").val(product.TenSP || "");
+        $("#edit-product-price").val(product.GiaNiemYet || product.GiaCoBan || "");
+        $("#edit-product-image").data("current-src", resolveImageSrc(imagePath));
+        $("#edit-product-preview-img").attr("src", resolveImageSrc(imagePath));
+        $("#edit-product-modal-subtitle").text(product.TenCategory || "");
+        renderProductDetailSummary(config.optionSummary);
+        renderProductOptionsPicker(
+          $("#edit-product-options"),
+          config.catalog || optionCatalog,
+          config.selectedOptionValueIds || [],
+          { inputName: "option_value_ids[]", readonly: isViewMode }
+        );
+        switchProductDetailTab(isViewMode ? "options" : "info");
+      },
+      error: function () {
+        showSnackBar("failed", "Có lỗi xảy ra khi tải thông tin sản phẩm");
+        $("#edit-product-modal").removeClass("active");
+      },
+    });
+  }
+
+  function switchProductDetailTab(tabName) {
+    const activeTab = tabName === "options" ? "options" : "info";
+
+    $(".product-detail-tab").each(function () {
+      const isActive = $(this).data("detail-tab") === activeTab;
+      $(this).toggleClass("active", isActive).attr("aria-selected", isActive);
+    });
+
+    $(".product-detail-panel").each(function () {
+      const isActive = $(this).data("detail-panel") === activeTab;
+      $(this).toggleClass("active", isActive);
+    });
+  }
+
+  function refreshProductDetailSummary($container) {
+    const counts = { sugar: 0, ice: 0, topping: 0 };
+    const groupMap = { 1: "sugar", 2: "ice", 3: "topping" };
+
+    $container.find(".option-chip-item input:checked").each(function () {
+      const groupId = Number($(this).closest(".option-chip-item").data("group-id"));
+      const key = groupMap[groupId];
+      if (key) {
+        counts[key] += 1;
+      }
+    });
+
+    renderProductDetailSummary(counts);
+  }
+
+  function setProductDetailModalMode(isViewMode) {
+    const $modal = $("#edit-product-modal");
+    const $form = $("#edit-product-form");
+    const $fields = $("#edit-product-name, #edit-product-price");
+
+    $modal.toggleClass("modal-mode-view", isViewMode);
+    $form.toggleClass("is-readonly", isViewMode);
+
+    if (isViewMode) {
+      $("#edit-product-modal-title").text("Chi tiết sản phẩm");
+      $("#edit-product-submit-btn").hide();
+      $("#cancel-edit-product").text("Đóng");
+      $fields.prop("readonly", true).prop("disabled", false);
+      $("#edit-product-image-upload").hide();
+    } else {
+      $("#edit-product-modal-title").text("Chỉnh sửa sản phẩm");
+      $("#edit-product-submit-btn").show().prop("disabled", false).text("Cập nhật sản phẩm");
+      $("#cancel-edit-product").text("Hủy");
+      $fields.prop("readonly", false).prop("disabled", false);
+      $("#edit-product-image-upload").show();
+    }
+  }
+
+  function renderProductDetailSummary(optionSummary) {
+    const summary = optionSummary || { sugar: 0, ice: 0, topping: 0 };
+    const chips = [
+      { label: "Mức đường", value: summary.sugar },
+      { label: "Mức đá", value: summary.ice },
+      { label: "Topping", value: summary.topping },
+    ];
+
+    let html = '<div class="product-detail-chips">';
+    chips.forEach(function (chip) {
+      html +=
+        '<span class="product-detail-chip">' +
+        chip.label +
+        ': <strong>' +
+        chip.value +
+        "</strong></span>";
+    });
+    html += "</div>";
+    $("#edit-product-summary").html(html);
+  }
+
+  function renderProductOptionsPicker($container, catalog, selectedIds, options) {
+    const settings = options || {};
+    const inputName = settings.inputName || "option_value_ids[]";
+    const readonly = Boolean(settings.readonly);
+    const selectedSet = {};
+    (selectedIds || []).forEach(function (id) {
+      selectedSet[String(id)] = true;
+    });
+
+    if (!catalog || !catalog.length) {
+      $container.html('<div class="empty-state">Chưa có dữ liệu tùy chọn</div>');
+      return;
+    }
+
+    let html = '<div class="product-options-collapsibles">';
+    catalog.forEach(function (group) {
+      const groupOptions = group.options || [];
+      const selectedCount = groupOptions.filter(function (option) {
+        return selectedSet[String(option.MaOptionValue)];
+      }).length;
+
+      let chipsHtml = '<div class="option-chip-list">';
+      groupOptions.forEach(function (option) {
+        const isChecked = Boolean(selectedSet[String(option.MaOptionValue)]);
+        chipsHtml +=
+          '<label class="option-chip-item' +
+          (readonly ? " is-readonly" : "") +
+          (isChecked ? " is-checked" : "") +
+          '" data-group-id="' +
+          group.MaOptionGroup +
+          '">' +
+          '<input type="checkbox" name="' +
+          inputName +
+          '" value="' +
+          option.MaOptionValue +
+          '"' +
+          (isChecked ? " checked" : "") +
+          (readonly ? " disabled" : "") +
+          ">" +
+          '<span class="option-chip-label">' +
+          escapeHtml(option.TenGiaTri) +
+          "</span>" +
+          "</label>";
+      });
+      chipsHtml += "</div>";
+
+      let actionsHtml = "";
+      if (!readonly) {
+        actionsHtml +=
+          '<button type="button" class="ui-collapsible-action option-select-all" data-group-id="' +
+          group.MaOptionGroup +
+          '">Tất cả</button>' +
+          '<button type="button" class="ui-collapsible-action option-clear-all" data-group-id="' +
+          group.MaOptionGroup +
+          '">Bỏ chọn</button>';
+      }
+
+      html += buildCollapsibleSection({
+        id: group.MaOptionGroup,
+        title: group.TenNhom,
+        subtitle: selectedCount + "/" + groupOptions.length + " đã chọn",
+        collapsed: true,
+        extraClass: "option-group-collapsible",
+        actionsHtml: actionsHtml,
+        bodyHtml: chipsHtml,
+      });
+    });
+    html += "</div>";
+
+    $container.html(html);
+    $container.find(".ui-collapsible").attr("data-group-id", function () {
+      return $(this).data("collapsible-id");
+    });
+    initCollapsibles($container);
+  }
+
+  function getSelectedOptionValueIds($container) {
+    return $container
+      .find('.option-chip-item input[type="checkbox"]:checked')
+      .map(function () {
+        return $(this).val();
+      })
+      .get();
+  }
+
+  function renderToppingBadge(optionSummary) {
+    const toppingCount = optionSummary && optionSummary.topping ? optionSummary.topping : 0;
+    if (toppingCount > 0) {
+      return (
+        '<span class="option-badge has-options">' +
+        toppingCount +
+        " topping</span>"
+      );
+    }
+    return '<span class="option-badge empty">Không có</span>';
+  }
 
   function loadProducts() {
     $.ajax({
@@ -618,6 +944,7 @@ $(document).ready(function () {
         html += "<th>Hình ảnh</th>";
         html += "<th>Tên sản phẩm</th>";
         html += "<th>Giá bán</th>";
+        html += "<th>Topping</th>";
         if (isAdmin) {
           html += "<th>Thao tác</th>";
         }
@@ -643,24 +970,28 @@ $(document).ready(function () {
             escapeHtml(product.TenSP) +
             "</div></td>";
           html += '<td><div class="product-price">' + price + "</div></td>";
+          html += "<td>" + renderToppingBadge(product.optionSummary) + "</td>";
 
           if (isAdmin) {
             html += "<td>";
             html += '<div class="action-buttons">';
             html +=
+              '<button type="button" class="btn btn-view btn-view-product" ' +
+              'data-product-id="' +
+              product.MaSP +
+              '" title="Xem chi tiết">';
+            html +=
+              '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">';
+            html += '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/>';
+            html += '<circle cx="12" cy="12" r="3"/>';
+            html += "</svg>";
+            html += " Xem";
+            html += "</button>";
+            html +=
               '<button type="button" class="btn btn-edit btn-edit-product" ' +
               'data-product-id="' +
               product.MaSP +
-              '" ' +
-              'data-product-name="' +
-              escapeHtml(product.TenSP) +
-              '" ' +
-              'data-product-price="' +
-              (product.GiaNiemYet || product.GiaCoBan) +
-              '" ' +
-              'data-product-image="' +
-              escapeHtml(imagePath) +
-              '">';
+              '" title="Chỉnh sửa sản phẩm">';
             html +=
               '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">';
             html +=
@@ -859,7 +1190,9 @@ $(document).ready(function () {
       const reader = new FileReader();
       reader.onload = function (event) {
         $image.attr("src", event.target.result);
-        $preview.show();
+        if ($preview) {
+          $preview.show();
+        }
       };
       reader.readAsDataURL(file);
       return;
@@ -867,11 +1200,15 @@ $(document).ready(function () {
 
     if (currentSrc) {
       $image.attr("src", currentSrc);
-      $preview.show();
+      if ($preview) {
+        $preview.show();
+      }
       return;
     }
 
-    $preview.hide();
+    if ($preview) {
+      $preview.hide();
+    }
   }
 
   function resolveImageSrc(imagePath) {

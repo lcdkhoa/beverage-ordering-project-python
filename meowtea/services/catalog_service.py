@@ -3,7 +3,7 @@ from math import ceil
 from sqlalchemy import func
 
 from ..extensions import db
-from ..models import Category, News, OptionGroup, OptionValue, PaymentMethod, ProductOptionGroup, SanPham, Store
+from ..models import Category, News, OptionGroup, OptionValue, PaymentMethod, ProductOptionValue, SanPham, Store
 from ..utils import decimal_to_number, markdown_excerpt, markdown_to_html, read_markdown_file
 
 
@@ -26,9 +26,9 @@ def get_product_by_id(product_id: int) -> SanPham | None:
 def get_product_options(product_id: int) -> list[dict]:
     rows = (
         db.session.query(OptionGroup, OptionValue)
-        .join(ProductOptionGroup, ProductOptionGroup.MaOptionGroup == OptionGroup.MaOptionGroup)
         .join(OptionValue, OptionValue.MaOptionGroup == OptionGroup.MaOptionGroup)
-        .filter(ProductOptionGroup.MaSP == product_id)
+        .join(ProductOptionValue, ProductOptionValue.MaOptionValue == OptionValue.MaOptionValue)
+        .filter(ProductOptionValue.MaSP == product_id)
         .order_by(OptionGroup.MaOptionGroup.asc(), OptionValue.MaOptionValue.asc())
         .all()
     )

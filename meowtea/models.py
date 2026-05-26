@@ -109,6 +109,13 @@ class ProductOptionGroup(db.Model, DictMixin):
     MaOptionGroup = db.Column(db.Integer, db.ForeignKey("Option_Group.MaOptionGroup"), primary_key=True)
 
 
+class ProductOptionValue(db.Model, DictMixin):
+    __tablename__ = "Product_Option_Value"
+
+    MaSP = db.Column(db.Integer, db.ForeignKey("SanPham.MaSP", ondelete="CASCADE"), primary_key=True)
+    MaOptionValue = db.Column(db.Integer, db.ForeignKey("Option_Value.MaOptionValue", ondelete="CASCADE"), primary_key=True)
+
+
 class Cart(db.Model, DictMixin):
     __tablename__ = "Cart"
 

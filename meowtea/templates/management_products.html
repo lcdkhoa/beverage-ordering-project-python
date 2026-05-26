@@ -3,6 +3,7 @@
 {% block title %}Quản lý sản phẩm & Topping - MeowTea Fresh{% endblock %}
 
 {% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/collapsible.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/management.css') }}">
 {% endblock %}
 
@@ -65,6 +66,13 @@
             <div class="form-group"><label for="product-price">Giá niêm yết (₫) <span class="required">*</span></label><input type="number" id="product-price" name="gia_niem_yet" class="form-input" min="0" step="1" required></div>
             <div class="form-group"><label for="product-reference-price">Giá tham khảo (₫)</label><input type="number" id="product-reference-price" name="gia_co_ban" class="form-input" min="0" step="1" placeholder="Để trống = giá niêm yết"></div>
             <div class="form-group"><label for="product-image">Hình ảnh</label><input type="file" id="product-image" name="hinh_anh" class="form-input" accept="image/*"><div id="image-preview" style="margin-top: 10px; display: none;"><img id="preview-img" src="" alt="Preview" style="max-width: 200px; max-height: 200px;"></div></div>
+            <div class="form-group">
+              <div class="product-detail-section-head">
+                <h3>Tùy chọn sản phẩm</h3>
+                <p>Mức đường và mức đá được chọn sẵn. Chọn topping nếu sản phẩm hỗ trợ.</p>
+              </div>
+              <div id="add-product-options" class="product-options-picker"></div>
+            </div>
             <div class="form-actions"><button type="button" class="btn btn-secondary" id="cancel-add-product">Hủy</button><button type="submit" class="btn btn-primary">Thêm sản phẩm</button></div>
           </form>
         </div>
@@ -73,20 +81,67 @@
 
     <div id="edit-product-modal" class="modal">
       <div class="modal-overlay"></div>
-      <div class="modal-content">
-        <div class="modal-header"><h2>Chỉnh sửa sản phẩm</h2><button type="button" class="modal-close" id="close-edit-product-modal">x</button></div>
-        <div class="modal-body">
+      <div class="modal-content modal-content-wide product-detail-modal">
+        <div class="modal-header product-detail-modal-header">
+          <div class="product-detail-modal-heading">
+            <h2 id="edit-product-modal-title">Chỉnh sửa sản phẩm</h2>
+            <p id="edit-product-modal-subtitle" class="modal-subtitle"></p>
+          </div>
+          <button type="button" class="modal-close" id="close-edit-product-modal" aria-label="Đóng">&times;</button>
+        </div>
+
+        <div class="product-detail-tabs" role="tablist" aria-label="Phần chi tiết sản phẩm">
+          <button type="button" class="product-detail-tab active" data-detail-tab="info" role="tab" aria-selected="true">Thông tin</button>
+          <button type="button" class="product-detail-tab" data-detail-tab="options" role="tab" aria-selected="false">Tùy chọn</button>
+        </div>
+
+        <div class="modal-body product-detail-body">
           <form id="edit-product-form" enctype="multipart/form-data">
             <input type="hidden" id="edit-product-id" name="product_id">
-            <div class="form-group"><label for="edit-product-name">Tên sản phẩm <span class="required">*</span></label><input type="text" id="edit-product-name" name="ten_sp" class="form-input" required></div>
-            <div class="form-group"><label for="edit-product-price">Giá bán (₫) <span class="required">*</span></label><input type="number" id="edit-product-price" name="gia_niem_yet" class="form-input" min="0" step="1" required></div>
-            <div class="form-group">
-              <label for="edit-product-image">Hình ảnh</label>
-              <input type="file" id="edit-product-image" name="hinh_anh" class="form-input" accept="image/*">
-              <small class="form-help">Để trống nếu muốn giữ hình hiện tại.</small>
-              <div id="edit-product-image-preview" class="image-preview" style="margin-top: 10px; display: none;"><img id="edit-product-preview-img" class="preview-img" src="" alt="Preview"></div>
+
+            <div class="product-detail-panel active" data-detail-panel="info" role="tabpanel">
+              <div class="product-detail-info-layout">
+                <div class="product-detail-image-panel">
+                  <div class="product-detail-image-frame">
+                    <img id="edit-product-preview-img" class="preview-img" src="" alt="Ảnh sản phẩm">
+                  </div>
+                  <div class="product-detail-image-upload" id="edit-product-image-upload">
+                    <label for="edit-product-image" class="product-image-upload-btn">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      Đổi ảnh
+                    </label>
+                    <input type="file" id="edit-product-image" name="hinh_anh" class="form-input product-image-input" accept="image/*">
+                    <small class="form-help">JPG, PNG, WEBP. Để trống nếu giữ ảnh hiện tại.</small>
+                  </div>
+                </div>
+
+                <div class="product-detail-fields">
+                  <div class="form-group">
+                    <label for="edit-product-name">Tên sản phẩm <span class="required">*</span></label>
+                    <input type="text" id="edit-product-name" name="ten_sp" class="form-input" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="edit-product-price">Giá bán (₫) <span class="required">*</span></label>
+                    <input type="number" id="edit-product-price" name="gia_niem_yet" class="form-input" min="0" step="1" required>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="form-actions"><button type="button" class="btn btn-secondary" id="cancel-edit-product">Hủy</button><button type="submit" class="btn btn-primary">Cập nhật sản phẩm</button></div>
+
+            <div class="product-detail-panel" data-detail-panel="options" role="tabpanel">
+              <div class="product-detail-options-intro">
+                <p>Chọn mức đường, đá và topping khách được phép chọn khi đặt món</p>
+                <div class="product-detail-summary" id="edit-product-summary"></div>
+              </div>
+              <div id="edit-product-options" class="product-options-picker">
+                <div class="loading-spinner">Đang tải tùy chọn...</div>
+              </div>
+            </div>
+
+            <div class="form-actions product-detail-actions" id="edit-product-form-actions">
+              <button type="button" class="btn btn-secondary" id="cancel-edit-product">Hủy</button>
+              <button type="submit" class="btn btn-primary" id="edit-product-submit-btn">Cập nhật sản phẩm</button>
+            </div>
           </form>
         </div>
       </div>
@@ -125,5 +180,6 @@
 {% endblock %}
 
 {% block scripts %}
+  <script src="{{ url_for('static', filename='js/collapsible.js') }}"></script>
   <script src="{{ url_for('static', filename='js/management.js') }}"></script>
 {% endblock %}

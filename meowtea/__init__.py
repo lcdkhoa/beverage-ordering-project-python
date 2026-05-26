@@ -83,6 +83,13 @@ def register_cli(app: Flask):
         seed_database()
         click.echo("SQLite schema and seed data are ready.")
 
+    @app.cli.command("migrate-product-options")
+    def migrate_product_options():
+        from .database.migrate_product_options import migrate_product_options_from_groups
+
+        created = migrate_product_options_from_groups()
+        click.echo(f"Product option migration complete. Created {created} rows.")
+
     @app.cli.command("verify-seed")
     def verify_seed():
         from .database.seed import EXPECTED_SEED_COUNTS

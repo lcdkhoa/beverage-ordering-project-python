@@ -2,7 +2,7 @@ from flask import session
 
 from ..clock import local_now
 from ..extensions import db
-from ..models import Cart, CartItem, CartItemOption, OptionGroup, OptionValue, ProductOptionGroup, SanPham
+from ..models import Cart, CartItem, CartItemOption, OptionGroup, OptionValue, ProductOptionValue, SanPham
 from ..utils import decimal_to_number
 from .catalog_service import get_product_by_id
 
@@ -233,8 +233,8 @@ def _normalize_cart_options(product_id: int, options: list[dict]) -> list[dict]:
     rows = (
         db.session.query(OptionValue, OptionGroup)
         .join(OptionGroup, OptionValue.MaOptionGroup == OptionGroup.MaOptionGroup)
-        .join(ProductOptionGroup, ProductOptionGroup.MaOptionGroup == OptionGroup.MaOptionGroup)
-        .filter(ProductOptionGroup.MaSP == product_id, OptionValue.MaOptionValue.in_(selected_ids))
+        .join(ProductOptionValue, ProductOptionValue.MaOptionValue == OptionValue.MaOptionValue)
+        .filter(ProductOptionValue.MaSP == product_id, OptionValue.MaOptionValue.in_(selected_ids))
         .all()
     )
     by_id = {option.MaOptionValue: (option, group) for option, group in rows}
