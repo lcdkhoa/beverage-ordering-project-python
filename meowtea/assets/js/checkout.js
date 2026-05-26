@@ -29,6 +29,28 @@ $(document).ready(function () {
   });
 
 
+  const $vatTaxId = $("#vat-tax-id");
+  const $vatCompany = $("#vat-company");
+  const $vatAddress = $("#vat-address");
+  const $vatLookupBtn = $("#vat-lookup-btn");
+  let vatLookupLockedTaxId = "";
+
+  function setVatAutofillLocked(isLocked) {
+    $vatCompany.prop("disabled", isLocked);
+    $vatAddress.prop("disabled", isLocked);
+  }
+
+  function resetVatAutofill(clearFields = false) {
+    vatLookupLockedTaxId = "";
+    setVatAutofillLocked(false);
+
+    if (clearFields) {
+      $vatCompany.val("");
+      $vatAddress.val("");
+    }
+  }
+
+
   $("#vat-invoice").on("change", function () {
     if ($(this).is(":checked")) {
       $("#vat-fields").slideDown(300);
@@ -38,6 +60,53 @@ $(document).ready(function () {
       $("#vat-fields").slideUp(300);
 
       $("#vat-fields input").prop("required", false);
+    }
+  });
+
+  $vatLookupBtn.on("click", function () {
+    const taxCode = $vatTaxId.val().replace(/\s+/g, "").trim();
+    if (!taxCode) {
+      showSnackBar("warm", "Vui lòng nhập mã số thuế");
+      $vatTaxId.focus();
+      return;
+    }
+
+    $vatLookupBtn.prop("disabled", true).text("Đang tra cứu...");
+
+    $.ajax({
+      url: getApiPath("order/lookup-tax"),
+      method: "GET",
+      data: { tax: taxCode },
+      dataType: "json",
+      success: function (response) {
+        if (response.success) {
+          $vatCompany.val(response.company_name || "");
+          $vatAddress.val(response.company_address || "");
+          vatLookupLockedTaxId = taxCode;
+          setVatAutofillLocked(true);
+          showSnackBar("success", response.message || "Tra cứu mã số thuế thành công");
+        } else {
+          resetVatAutofill(false);
+          showSnackBar("failed", response.message || "Không thể tra cứu mã số thuế");
+        }
+      },
+      error: function (xhr) {
+        resetVatAutofill(false);
+        const message =
+          (xhr.responseJSON && xhr.responseJSON.message) ||
+          "Không thể tra cứu mã số thuế. Vui lòng thử lại.";
+        showSnackBar("failed", message);
+      },
+      complete: function () {
+        $vatLookupBtn.prop("disabled", false).text("Tra cứu");
+      },
+    });
+  });
+
+  $vatTaxId.on("input", function () {
+    const currentTaxCode = $(this).val().replace(/\s+/g, "").trim();
+    if (vatLookupLockedTaxId && currentTaxCode !== vatLookupLockedTaxId) {
+      resetVatAutofill(true);
     }
   });
 

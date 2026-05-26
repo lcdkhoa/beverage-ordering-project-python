@@ -664,9 +664,24 @@
     transition: all 0.3s ease;
 }
 
+.form-input:disabled,
+.form-input[readonly] {
+    background: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+    border-color: #e9ecef;
+}
+
 .form-input:focus {
     outline: none;
     border-color: var(--primary-green);
+}
+
+.form-input:focus:disabled,
+.form-input:focus[readonly] {
+    background: #f8f9fa;
+    box-shadow: none;
+    border-color: #e9ecef;
 }
 
 .form-group-inline {
@@ -693,6 +708,11 @@
 
 .btn-lookup:hover {
     background: #0f3d1f;
+}
+
+.btn-lookup:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
 .payment-methods {

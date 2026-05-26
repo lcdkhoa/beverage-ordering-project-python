@@ -71,16 +71,22 @@
       </div>
     </div>
 
-    <div id="edit-price-modal" class="modal">
+    <div id="edit-product-modal" class="modal">
       <div class="modal-overlay"></div>
       <div class="modal-content">
-        <div class="modal-header"><h2>Điều chỉnh giá bán</h2><button type="button" class="modal-close" id="close-edit-modal">x</button></div>
+        <div class="modal-header"><h2>Chỉnh sửa sản phẩm</h2><button type="button" class="modal-close" id="close-edit-product-modal">x</button></div>
         <div class="modal-body">
-          <form id="edit-price-form">
+          <form id="edit-product-form" enctype="multipart/form-data">
             <input type="hidden" id="edit-product-id" name="product_id">
-            <div class="form-group"><label for="edit-product-name">Tên sản phẩm</label><input type="text" id="edit-product-name" class="form-input" readonly></div>
-            <div class="form-group"><label for="edit-product-price">Giá bán mới (₫) <span class="required">*</span></label><input type="number" id="edit-product-price" name="price" class="form-input" min="0" step="1" required></div>
-            <div class="form-actions"><button type="button" class="btn btn-secondary" id="cancel-edit-price">Hủy</button><button type="submit" class="btn btn-primary">Cập nhật giá</button></div>
+            <div class="form-group"><label for="edit-product-name">Tên sản phẩm <span class="required">*</span></label><input type="text" id="edit-product-name" name="ten_sp" class="form-input" required></div>
+            <div class="form-group"><label for="edit-product-price">Giá bán (₫) <span class="required">*</span></label><input type="number" id="edit-product-price" name="gia_niem_yet" class="form-input" min="0" step="1" required></div>
+            <div class="form-group">
+              <label for="edit-product-image">Hình ảnh</label>
+              <input type="file" id="edit-product-image" name="hinh_anh" class="form-input" accept="image/*">
+              <small class="form-help">Để trống nếu muốn giữ hình hiện tại.</small>
+              <div id="edit-product-image-preview" class="image-preview" style="margin-top: 10px; display: none;"><img id="edit-product-preview-img" class="preview-img" src="" alt="Preview"></div>
+            </div>
+            <div class="form-actions"><button type="button" class="btn btn-secondary" id="cancel-edit-product">Hủy</button><button type="submit" class="btn btn-primary">Cập nhật sản phẩm</button></div>
           </form>
         </div>
       </div>

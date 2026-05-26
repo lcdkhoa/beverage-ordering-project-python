@@ -1,8 +1,12 @@
 from datetime import datetime
+from pathlib import Path
+from uuid import uuid4
+
+from flask import current_app
+from werkzeug.utils import secure_filename
 
 from ..extensions import db
 from ..models import Category, OptionGroup, OptionValue, Promotion, SanPham
-from ..utils import decimal_to_number
 from .catalog_service import product_dict
 
 
@@ -23,18 +27,38 @@ def list_promotions() -> list[dict]:
     return [row.to_dict() for row in Promotion.query.order_by(Promotion.MaPromotion.desc()).all()]
 
 
-def create_product(data: dict) -> SanPham:
+def create_product(data: dict, image_file=None) -> SanPham:
     product = SanPham(
         TenSP=(data.get("ten_sp") or "").strip(),
         MaCategory=int(data.get("ma_category") or 0),
         GiaNiemYet=float(data.get("gia_niem_yet") or data.get("price") or 0),
         GiaCoBan=float(data.get("gia_co_ban") or data.get("gia_niem_yet") or data.get("price") or 0),
-        HinhAnh=(data.get("hinh_anh") or data.get("image") or "").strip() or None,
+        HinhAnh=_resolve_product_image(data, image_file),
         TrangThai=1,
     )
     if not product.TenSP or not product.MaCategory:
         raise ValueError("Tên sản phẩm và danh mục là bắt buộc")
     db.session.add(product)
+    db.session.commit()
+    return product
+
+
+def update_product(product_id: int, data: dict, image_file=None) -> SanPham:
+    product = SanPham.query.get(product_id)
+    if not product:
+        raise ValueError("Sản phẩm không tồn tại")
+
+    product_name = (data.get("ten_sp") or data.get("name") or "").strip()
+    if not product_name:
+        raise ValueError("Tên sản phẩm là bắt buộc")
+
+    listed_price = float(data.get("gia_niem_yet") or data.get("price") or 0)
+    if listed_price < 0:
+        raise ValueError("Giá bán không hợp lệ")
+
+    product.TenSP = product_name
+    product.GiaNiemYet = listed_price
+    product.HinhAnh = _resolve_product_image(data, image_file, current_path=product.HinhAnh)
     db.session.commit()
     return product
 
@@ -135,3 +159,29 @@ def _parse_datetime(value):
         except ValueError:
             continue
     return None
+
+
+def _resolve_product_image(data: dict, image_file=None, current_path: str | None = None) -> str | None:
+    if image_file and getattr(image_file, "filename", ""):
+        return _save_product_image(image_file)
+
+    image_path = (data.get("hinh_anh") or data.get("image") or "").strip()
+    if image_path:
+        return image_path
+
+    return current_path
+
+
+def _save_product_image(image_file) -> str:
+    original_name = secure_filename(image_file.filename or "")
+    extension = Path(original_name).suffix.lower()
+    allowed_extensions = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
+    if extension not in allowed_extensions:
+        raise ValueError("Chỉ hỗ trợ hình ảnh JPG, PNG, GIF hoặc WEBP")
+
+    upload_dir = Path(current_app.config["PROJECT_ROOT"]) / "assets" / "img" / "products" / "uploads"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    stored_name = f"product-{uuid4().hex}{extension}"
+    image_file.save(upload_dir / stored_name)
+    return f"assets/img/products/uploads/{stored_name}"

@@ -38,7 +38,27 @@ def promotions_route():
 @bp.post("/create-product.php")
 @role_required("Admin")
 def create_product_route():
-    return _mutate(lambda: service.create_product(request.form.to_dict()), "Tạo sản phẩm thành công")
+    return _mutate(
+        lambda: service.create_product(
+            request.form.to_dict(),
+            request.files.get("hinh_anh"),
+        ),
+        "Tạo sản phẩm thành công",
+    )
+
+
+@bp.post("/update-product")
+@bp.post("/update-product.php")
+@role_required("Admin")
+def update_product_route():
+    return _mutate(
+        lambda: service.update_product(
+            int(request.form.get("product_id") or request.form.get("id") or 0),
+            request.form.to_dict(),
+            request.files.get("hinh_anh"),
+        ),
+        "Cập nhật sản phẩm thành công",
+    )
 
 
 @bp.post("/update-price")

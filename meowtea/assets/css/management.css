@@ -473,11 +473,15 @@ input[type="file"].form-input::-webkit-file-upload-button:hover {
     background-color: #0f3a1f;
 }
 
-#image-preview {
+.image-preview,
+#image-preview,
+#edit-product-image-preview {
     margin-top: 10px;
 }
 
-#preview-img {
+.preview-img,
+#preview-img,
+#edit-product-preview-img {
     max-width: 200px;
     max-height: 200px;
     border-radius: 30px;

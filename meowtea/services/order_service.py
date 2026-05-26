@@ -1,6 +1,10 @@
+import json
 from datetime import timedelta
 from math import ceil
 from random import randint
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
+from urllib.request import urlopen
 
 from flask import session
 from sqlalchemy import func
@@ -26,6 +30,44 @@ def _auto_progress_orders():
         Orders.ThoiDiemNhanHang <= now,
     ).update({"TrangThai": "Completed"}, synchronize_session=False)
     db.session.commit()
+
+
+def lookup_taxpayer_info(tax_code: str) -> dict:
+    normalized_tax_code = "".join((tax_code or "").split())
+    if not normalized_tax_code:
+        raise ValueError("Vui lòng nhập mã số thuế")
+
+    query = urlencode({"tax": normalized_tax_code})
+    url = f"https://mst.minvoice.com.vn/api/System/SearchTaxCode?{query}"
+
+    try:
+        with urlopen(url, timeout=10) as response:
+            if response.status != 200:
+                raise ValueError("Không thể tra cứu mã số thuế lúc này")
+            payload = json.loads(response.read().decode("utf-8"))
+    except HTTPError as exc:
+        if exc.code == 404:
+            raise ValueError("Không tìm thấy thông tin doanh nghiệp theo mã số thuế này") from exc
+        raise ValueError("Không thể tra cứu mã số thuế lúc này") from exc
+    except URLError as exc:
+        raise ValueError("Không thể kết nối tới dịch vụ tra cứu mã số thuế") from exc
+    except (TimeoutError, json.JSONDecodeError, UnicodeDecodeError) as exc:
+        raise ValueError("Dữ liệu tra cứu mã số thuế không hợp lệ") from exc
+
+    if not isinstance(payload, dict):
+        raise ValueError("Dữ liệu tra cứu mã số thuế không hợp lệ")
+
+    company_name = (payload.get("ten_cty") or "").strip()
+    company_address = (payload.get("dia_chi") or "").strip()
+    if not company_name or not company_address:
+        raise ValueError("Không lấy được đầy đủ tên công ty và địa chỉ công ty")
+
+    return {
+        "tax_code": normalized_tax_code,
+        "company_name": company_name,
+        "company_address": company_address,
+        "raw": payload,
+    }
 
 
 def create_order(data: dict) -> dict:

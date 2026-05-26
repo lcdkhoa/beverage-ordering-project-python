@@ -69,26 +69,31 @@ $(document).ready(function () {
   );
 
 
-  $(document).on("click", ".btn-edit-price", function () {
+  $(document).on("click", ".btn-edit-product", function () {
     const productId = $(this).data("product-id");
     const productName = $(this).data("product-name");
     const currentPrice = $(this).data("product-price");
+    const productImage = $(this).data("product-image");
 
     $("#edit-product-id").val(productId);
     $("#edit-product-name").val(productName);
     $("#edit-product-price").val(currentPrice);
-    $("#edit-price-modal").addClass("active");
+    $("#edit-product-image").val("");
+    $("#edit-product-image").data("current-src", resolveImageSrc(productImage));
+    $("#edit-product-preview-img").attr("src", resolveImageSrc(productImage));
+    $("#edit-product-image-preview").show();
+    $("#edit-product-modal").addClass("active");
   });
 
-  $("#close-edit-modal, #cancel-edit-price, .modal-overlay").on(
+  $("#close-edit-product-modal, #cancel-edit-product, .modal-overlay").on(
     "click",
     function (e) {
       if (
         $(e.target).hasClass("modal-overlay") ||
         $(e.target).closest(".modal-close").length ||
-        $(e.target).attr("id") === "cancel-edit-price"
+        $(e.target).attr("id") === "cancel-edit-product"
       ) {
-        $("#edit-price-modal").removeClass("active");
+        $("#edit-product-modal").removeClass("active");
       }
     }
   );
@@ -243,17 +248,11 @@ $(document).ready(function () {
 
 
   $("#product-image").on("change", function (e) {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        $("#preview-img").attr("src", e.target.result);
-        $("#image-preview").show();
-      };
-      reader.readAsDataURL(file);
-    } else {
-      $("#image-preview").hide();
-    }
+    updateImagePreview($(this), $("#image-preview"), $("#preview-img"));
+  });
+
+  $("#edit-product-image").on("change", function () {
+    updateImagePreview($(this), $("#edit-product-image-preview"), $("#edit-product-preview-img"));
   });
 
 
@@ -289,7 +288,9 @@ $(document).ready(function () {
     formData.append("ma_category", maCategory);
     formData.append("gia_niem_yet", giaNiemYet);
     if (giaCoBan !== "") formData.append("gia_co_ban", giaCoBan);
-    formData.append("hinh_anh", imageFile);
+    if (imageFile) {
+      formData.append("hinh_anh", imageFile);
+    }
 
 
     $.ajax({
@@ -334,40 +335,53 @@ $(document).ready(function () {
   });
 
 
-  $("#edit-price-form").on("submit", function (e) {
+  $("#edit-product-form").on("submit", function (e) {
     e.preventDefault();
 
-    const formData = {
-      product_id: $("#edit-product-id").val(),
-      price: $("#edit-product-price").val(),
-    };
+    const productId = $("#edit-product-id").val();
+    const productName = $("#edit-product-name").val().trim();
+    const productPrice = $("#edit-product-price").val();
+    const imageFile = $("#edit-product-image")[0].files[0];
 
+    if (!productName) {
+      showSnackBar("failed", "Vui lòng nhập tên sản phẩm");
+      return;
+    }
 
-    if (!formData.price || formData.price < 0) {
+    if (!productPrice || productPrice < 0) {
       showSnackBar("failed", "Vui lòng nhập giá bán hợp lệ");
       return;
     }
 
+    const formData = new FormData();
+    formData.append("product_id", productId);
+    formData.append("ten_sp", productName);
+    formData.append("gia_niem_yet", productPrice);
+    if (imageFile) {
+      formData.append("hinh_anh", imageFile);
+    }
+
 
     $.ajax({
-      url: apiBasePath + "update-price",
+      url: apiBasePath + "update-product",
       method: "POST",
       data: formData,
+      processData: false,
+      contentType: false,
       dataType: "json",
       success: function (response) {
         if (response.success) {
           showSnackBar("success", response.message);
-          $("#edit-price-modal").removeClass("active");
+          $("#edit-product-modal").removeClass("active");
+          $("#edit-product-form")[0].reset();
           loadProducts(); // Reload products list
         } else {
-          var msg = response.message || "Có lỗi xảy ra";
-          var type = msg.indexOf("giá không thay đổi") !== -1 ? "warm" : "failed";
-          showSnackBar(type, msg);
+          showSnackBar("failed", response.message || "Có lỗi xảy ra");
         }
       },
       error: function (xhr, status, error) {
         console.error("Error:", error);
-        showSnackBar("failed", "Có lỗi xảy ra khi cập nhật giá. Vui lòng thử lại.");
+        showSnackBar("failed", "Có lỗi xảy ra khi cập nhật sản phẩm. Vui lòng thử lại.");
       },
     });
   });
@@ -640,7 +654,7 @@ $(document).ready(function () {
             html += "<td>";
             html += '<div class="action-buttons">';
             html +=
-              '<button type="button" class="btn btn-edit btn-edit-price" ' +
+              '<button type="button" class="btn btn-edit btn-edit-product" ' +
               'data-product-id="' +
               product.MaSP +
               '" ' +
@@ -649,6 +663,9 @@ $(document).ready(function () {
               '" ' +
               'data-product-price="' +
               (product.GiaNiemYet || product.GiaCoBan) +
+              '" ' +
+              'data-product-image="' +
+              escapeHtml(imagePath) +
               '">';
             html +=
               '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">';
@@ -657,7 +674,7 @@ $(document).ready(function () {
             html +=
               '<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>';
             html += "</svg>";
-            html += " Sửa giá";
+            html += " Sửa sản phẩm";
             html += "</button>";
             html +=
               '<button type="button" class="btn btn-delete btn-delete-product" ' +
@@ -839,6 +856,37 @@ $(document).ready(function () {
   }
 
 
+
+  function updateImagePreview($input, $preview, $image) {
+    const file = $input[0].files[0];
+    const currentSrc = $input.data("current-src");
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        $image.attr("src", event.target.result);
+        $preview.show();
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    if (currentSrc) {
+      $image.attr("src", currentSrc);
+      $preview.show();
+      return;
+    }
+
+    $preview.hide();
+  }
+
+  function resolveImageSrc(imagePath) {
+    const normalizedPath = imagePath || "assets/img/products/product_one.png";
+    if (/^https?:\/\//i.test(normalizedPath) || normalizedPath.startsWith("/")) {
+      return normalizedPath;
+    }
+    return "/" + normalizedPath.replace(/^\/+/, "");
+  }
 
   function formatCurrency(amount) {
     return formatCurrencyWithStyle(amount);

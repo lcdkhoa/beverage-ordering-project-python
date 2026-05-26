@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request, session
 
 from ...security import current_user, login_required, role_required
 from ...services.cart_service import set_selected_store
-from ...services.order_service import create_order, get_order_detail, list_orders, update_order_status
+from ...services.order_service import create_order, get_order_detail, list_orders, lookup_taxpayer_info, update_order_status
 
 bp = Blueprint("orders", __name__)
 
@@ -17,6 +17,17 @@ def create_route():
         return jsonify(success=True, message="Đặt hàng thành công", **payload)
     except Exception as exc:
         return jsonify(success=False, message=str(exc))
+
+
+@bp.get("/lookup-tax")
+@bp.get("/lookup-tax.php")
+@login_required
+def lookup_tax_route():
+    try:
+        payload = lookup_taxpayer_info(request.args.get("tax") or "")
+        return jsonify(success=True, message="Tra cứu mã số thuế thành công", **payload)
+    except Exception as exc:
+        return jsonify(success=False, message=str(exc)), 400
 
 
 @bp.get("/get")
