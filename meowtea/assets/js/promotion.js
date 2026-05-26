@@ -129,36 +129,33 @@ $(document).ready(function () {
     const promotionId = $(this).data("promotion-id");
     const promotionCode = $(this).data("promotion-code");
 
-
-    if (
-      !confirm(
+    showDeleteConfirmDialog({
+      title: "Xóa khuyến mãi",
+      message:
         "Bạn có chắc chắn muốn xóa khuyến mãi '" +
-          promotionCode +
-          "'?\n\nHành động này không thể hoàn tác."
-      )
-    ) {
-      return;
-    }
-
-
-    $.ajax({
-      url: apiBasePath + "delete-promotion",
-      method: "POST",
-      data: {
-        promotion_id: promotionId,
-      },
-      dataType: "json",
-      success: function (response) {
-        if (response.success) {
-          showSnackBar("success", response.message);
-          loadPromotions(); // Reload promotions list
-        } else {
-          showSnackBar("failed", response.message || "Có lỗi xảy ra");
-        }
-      },
-      error: function (xhr, status, error) {
-        console.error("Error:", error);
-        showSnackBar("failed", "Có lỗi xảy ra khi xóa khuyến mãi. Vui lòng thử lại.");
+        promotionCode +
+        "'?\n\nHành động này không thể hoàn tác.",
+      onConfirm: function () {
+        $.ajax({
+          url: apiBasePath + "delete-promotion",
+          method: "POST",
+          data: {
+            promotion_id: promotionId,
+          },
+          dataType: "json",
+          success: function (response) {
+            if (response.success) {
+              showSnackBar("success", response.message);
+              loadPromotions();
+            } else {
+              showSnackBar("failed", response.message || "Có lỗi xảy ra");
+            }
+          },
+          error: function (xhr, status, error) {
+            console.error("Error:", error);
+            showSnackBar("failed", "Có lỗi xảy ra khi xóa khuyến mãi. Vui lòng thử lại.");
+          },
+        });
       },
     });
   });

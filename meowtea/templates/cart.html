@@ -103,11 +103,9 @@
     </div>
   </main>
 
-  {% include "partials/modal_box.html" %}
 {% endblock %}
 
 {% block scripts %}
-  <script src="{{ url_for('static', filename='js/modal-box.js') }}"></script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
   <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
 {% endblock %}

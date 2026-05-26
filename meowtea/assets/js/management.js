@@ -158,36 +158,33 @@ $(document).ready(function () {
     const toppingId = $(this).data("topping-id");
     const toppingName = $(this).data("topping-name");
 
-
-    if (
-      !confirm(
+    showDeleteConfirmDialog({
+      title: "Xóa topping",
+      message:
         "Bạn có chắc chắn muốn xóa topping '" +
-          toppingName +
-          "'?\n\nHành động này không thể hoàn tác."
-      )
-    ) {
-      return;
-    }
-
-
-    $.ajax({
-      url: apiBasePath + "delete-topping",
-      method: "POST",
-      data: {
-        topping_id: toppingId,
-      },
-      dataType: "json",
-      success: function (response) {
-        if (response.success) {
-          showSnackBar("success", response.message);
-          loadToppings(); // Reload toppings list
-        } else {
-          showSnackBar("failed", response.message || "Có lỗi xảy ra");
-        }
-      },
-      error: function (xhr, status, error) {
-        console.error("Error:", error);
-        showSnackBar("failed", "Có lỗi xảy ra khi xóa topping. Vui lòng thử lại.");
+        toppingName +
+        "'?\n\nHành động này không thể hoàn tác.",
+      onConfirm: function () {
+        $.ajax({
+          url: apiBasePath + "delete-topping",
+          method: "POST",
+          data: {
+            topping_id: toppingId,
+          },
+          dataType: "json",
+          success: function (response) {
+            if (response.success) {
+              showSnackBar("success", response.message);
+              loadToppings();
+            } else {
+              showSnackBar("failed", response.message || "Có lỗi xảy ra");
+            }
+          },
+          error: function (xhr, status, error) {
+            console.error("Error:", error);
+            showSnackBar("failed", "Có lỗi xảy ra khi xóa topping. Vui lòng thử lại.");
+          },
+        });
       },
     });
   });
@@ -212,36 +209,33 @@ $(document).ready(function () {
     const productId = $(this).data("product-id");
     const productName = $(this).data("product-name");
 
-
-    if (
-      !confirm(
+    showDeleteConfirmDialog({
+      title: "Xóa sản phẩm",
+      message:
         "Bạn có chắc chắn muốn xóa sản phẩm '" +
-          productName +
-          "'?\n\nHành động này không thể hoàn tác."
-      )
-    ) {
-      return;
-    }
-
-
-    $.ajax({
-      url: apiBasePath + "delete-product",
-      method: "POST",
-      data: {
-        product_id: productId,
-      },
-      dataType: "json",
-      success: function (response) {
-        if (response.success) {
-          showSnackBar("success", response.message);
-          loadProducts(); // Reload products list
-        } else {
-          showSnackBar("failed", response.message || "Có lỗi xảy ra");
-        }
-      },
-      error: function (xhr, status, error) {
-        console.error("Error:", error);
-        showSnackBar("failed", "Có lỗi xảy ra khi xóa sản phẩm. Vui lòng thử lại.");
+        productName +
+        "'?\n\nHành động này không thể hoàn tác.",
+      onConfirm: function () {
+        $.ajax({
+          url: apiBasePath + "delete-product",
+          method: "POST",
+          data: {
+            product_id: productId,
+          },
+          dataType: "json",
+          success: function (response) {
+            if (response.success) {
+              showSnackBar("success", response.message);
+              loadProducts();
+            } else {
+              showSnackBar("failed", response.message || "Có lỗi xảy ra");
+            }
+          },
+          error: function (xhr, status, error) {
+            console.error("Error:", error);
+            showSnackBar("failed", "Có lỗi xảy ra khi xóa sản phẩm. Vui lòng thử lại.");
+          },
+        });
       },
     });
   });

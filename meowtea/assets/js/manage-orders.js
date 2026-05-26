@@ -249,9 +249,14 @@ $(document).ready(function() {
         });
 
         $body.find('#cancelOrderBtn').on('click', function() {
-            if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
-                updateOrderStatus(orderId, { action: 'cancel' });
-            }
+            showDeleteConfirmDialog({
+                title: 'Hủy đơn hàng',
+                message: 'Bạn có chắc chắn muốn hủy đơn hàng này?',
+                confirmText: 'Hủy đơn',
+                onConfirm: function() {
+                    updateOrderStatus(orderId, { action: 'cancel' });
+                }
+            });
         });
 
         if (!$statusSelect.length || !$statusActions.length) {

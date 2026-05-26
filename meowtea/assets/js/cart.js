@@ -70,16 +70,11 @@ $(document).ready(function () {
     }
 
 
-    showModalBox({
+    showDeleteConfirmDialog({
       title: 'Xóa sản phẩm',
       message: 'Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?',
-      type: 'yesno',
       onConfirm: function() {
-
         proceedWithDeletion(itemIndex);
-      },
-      onCancel: function() {
-
       }
     });
   }

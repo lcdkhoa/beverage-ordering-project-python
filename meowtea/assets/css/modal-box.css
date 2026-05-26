@@ -145,6 +145,22 @@
     box-shadow: 0 1px 4px rgba(107, 114, 128, 0.2);
 }
 
+.modal-box-btn-danger {
+    background-color: #dc2626;
+    color: #ffffff;
+}
+
+.modal-box-btn-danger:hover {
+    background-color: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+}
+
+.modal-box-btn-danger:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(220, 38, 38, 0.25);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .modal-box-container {

@@ -63,14 +63,16 @@
         const onCancel = typeof options.onCancel === 'function' ? options.onCancel : null;
 
 
-        if (type !== 'yesno' && type !== 'acknowledge') {
+        if (type !== 'yesno' && type !== 'delete' && type !== 'acknowledge') {
             console.warn('ModalBox: Invalid type. Using "acknowledge" instead.');
             type = 'acknowledge';
         }
 
+        const confirmText = options.confirmText || (type === 'delete' ? 'Xóa' : 'OK');
+        const cancelText = options.cancelText || (type === 'delete' ? 'Hủy' : 'Cancel');
 
         $title.html(escapeHtml(title));
-        $message.html(escapeHtml(message));
+        $message.html(escapeHtml(message).replace(/\n/g, '<br>'));
 
 
         currentOnConfirm = onConfirm;
@@ -79,18 +81,32 @@
 
         $footer.empty();
 
-        if (type === 'yesno') {
+        if (type === 'delete') {
+            const $deleteBtn = $('<button>', {
+                type: 'button',
+                class: 'modal-box-btn modal-box-btn-danger',
+                text: confirmText
+            }).on('click', handleConfirm);
 
             const $cancelBtn = $('<button>', {
                 type: 'button',
                 class: 'modal-box-btn modal-box-btn-secondary',
-                text: 'Cancel'
+                text: cancelText
+            }).on('click', handleCancel);
+
+            $footer.append($deleteBtn, $cancelBtn);
+        } else if (type === 'yesno') {
+
+            const $cancelBtn = $('<button>', {
+                type: 'button',
+                class: 'modal-box-btn modal-box-btn-secondary',
+                text: cancelText
             }).on('click', handleCancel);
 
             const $okBtn = $('<button>', {
                 type: 'button',
                 class: 'modal-box-btn modal-box-btn-primary',
-                text: 'OK'
+                text: confirmText
             }).on('click', handleConfirm);
 
             $footer.append($cancelBtn, $okBtn);
@@ -129,6 +145,24 @@
     });
 
 
+    function showDeleteConfirmDialog(options) {
+        if (!options || typeof options !== 'object') {
+            console.error('ModalBox: options object is required');
+            return;
+        }
+
+        showModalBox({
+            title: options.title || 'Xác nhận xóa',
+            message: options.message || '',
+            type: 'delete',
+            confirmText: options.confirmText,
+            cancelText: options.cancelText,
+            onConfirm: options.onConfirm,
+            onCancel: options.onCancel
+        });
+    }
+
     window.showModalBox = showModalBox;
+    window.showDeleteConfirmDialog = showDeleteConfirmDialog;
 
 })();
