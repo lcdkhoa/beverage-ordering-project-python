@@ -117,11 +117,6 @@ def news_detail(news_id: int):
     return render_template("news_detail.html", active_page="news", news=item)
 
 
-@bp.get("/career")
-def career():
-    return render_template("career.html", active_page="career")
-
-
 @bp.get("/about")
 def about():
     return render_template("about.html", active_page="about")

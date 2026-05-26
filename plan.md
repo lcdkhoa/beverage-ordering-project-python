@@ -83,7 +83,7 @@
 - [x] Convert homepage `index.php` -> Jinja.
 - [x] Convert menu page `pages/menu/index.php` -> Jinja.
 - [x] Convert stores page `pages/stores/index.php` -> Jinja.
-- [x] Convert static about/career pages `pages/about/index.php`, `pages/career/index.php` -> Jinja.
+- [x] Convert static about page `pages/about/index.php` -> Jinja.
 - [x] Convert auth pages `pages/auth/login.php`, `pages/auth/register.php` -> Jinja.
 - [x] Convert cart page `pages/cart/index.php` -> Jinja.
 - [x] Convert checkout/profile/management pages.
@@ -112,7 +112,7 @@
 - [x] Browser smoke tren dev server moi `http://127.0.0.1:5001`: protected pages redirect login dung, khong con 404 cho `/checkout`, `/profile`, `/orders`, `/management/products`.
 - [x] Backend/test-client smoke moi pass tren code hien tai: health, product detail, customer login, add cart, checkout render, create order store 2, order result, admin list/accept/detail, DB order store selected = 2, cart DB cleared.
 - [x] Browser smoke tren `http://127.0.0.1:5002`: login page render, login `cust/cust` thanh cong, `/menu` render voi user session va modal product hien thi.
-- [x] Static page parity moi them: `/about`, `/career`; header/footer Flask khong con link `#` cho hai trang nay.
+- [x] Static page parity moi them: `/about`; header/footer Flask khong con link `#` cho trang nay.
 - [x] Fix menu AJAX product-card parity: `/api/menu/search` dung chung Jinja partial voi trang `/menu`, khong con card HTML rut gon bi be layout sau khi click category/search.
 - [x] Quet va fix AJAX legacy con sot: `assets/js/menu.js` da doi tu `../../api/menu/search.php` sang `getApiPath("menu/search")`; scan hien khong con relative `.php` API trong JS migrated.
 - [ ] Browser smoke add-to-cart bang click trong in-app browser can test lai tay/Playwright ngoai neu can; in-app browser click vao modal action bi loi toa do, nhung API/test-client full flow da pass.
