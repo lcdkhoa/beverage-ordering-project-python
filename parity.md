@@ -40,12 +40,12 @@
 | `/api/management/update-promotion.php` | `/api/management/update-promotion` | Ported | Admin only. |
 | `/api/management/delete-promotion.php` | `/api/management/delete-promotion` | Ported | Soft-deletes by `TrangThai = 0`. |
 
-## SQLite Notes
+## Postgres Notes
 
 - Enums: legacy MySQL enum-like values are stored as strings. Flask validates important values in services instead of relying on DB enum constraints.
 - Datetime: application writes naive `DATETIME` values in UTC+7 using `meowtea.clock.local_now()` to match Vietnam-local legacy behavior.
-- Cascade: SQLite foreign keys are enabled on connect with `PRAGMA foreign_keys=ON`; cascade behavior is declared on cart/order child rows.
-- Collation: SQLite default collation is not identical to MySQL. Current search uses SQL `LIKE` and should be manually checked for Vietnamese accent/case expectations if production search quality matters.
+- Cascade: cart/order child rows declare cascade behavior in the SQLAlchemy models and are enforced by Postgres constraints.
+- Collation: current search uses SQL `LIKE`; check Vietnamese accent/case expectations if production search quality matters.
 - Soft delete: products and promotions keep the PHP-style `TrangThai = 0` soft-delete behavior; toppings are physically deleted because the current PHP endpoint does the same.
 
 ## Response Shape Checks

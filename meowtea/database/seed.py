@@ -16,7 +16,6 @@ from ..models import (
     User,
     UserStore,
 )
-from .migrate_product_options import seed_product_option_values
 
 
 EXPECTED_SEED_COUNTS = {
@@ -34,6 +33,16 @@ EXPECTED_SEED_COUNTS = {
     Promotion: 2,
     News: 4,
 }
+
+
+def seed_product_option_values(links: list[tuple[int, int]], values_by_group: dict[int, list[int]]) -> None:
+    rows = [
+        ProductOptionValue(MaSP=product_id, MaOptionValue=option_value_id)
+        for product_id, group_id in links
+        for option_value_id in values_by_group.get(group_id, [])
+    ]
+    db.session.add_all(rows)
+    db.session.commit()
 
 
 def seed_database():
