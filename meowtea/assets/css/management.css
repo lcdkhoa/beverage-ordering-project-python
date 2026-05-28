@@ -1085,6 +1085,14 @@ input[type="file"].form-input::-webkit-file-upload-button:hover {
     justify-content: flex-end;
 }
 
+.manage-order-status-action-section {
+    display: none;
+}
+
+.manage-order-status-action-section.active {
+    display: block;
+}
+
 .manage-order-status-actions.active {
     display: flex;
 }

@@ -242,6 +242,7 @@ $(document).ready(function() {
         var $body = $('#manageOrderDetailBody');
         var initialStatus = normalizeManageStatus(order.TrangThai);
         var $statusSelect = $body.find('#manageOrderStatusSelect');
+        var $statusActionSection = $body.find('#manageOrderStatusActionSection');
         var $statusActions = $body.find('#manageOrderStatusActions');
 
         $body.find('#acceptOrderBtn').on('click', function() {
@@ -264,17 +265,21 @@ $(document).ready(function() {
         }
 
         $statusSelect.on('change', function() {
-            $statusActions.toggleClass('active', $(this).val() !== initialStatus);
+            var hasChanged = $(this).val() !== initialStatus;
+            $statusActionSection.toggleClass('active', hasChanged);
+            $statusActions.toggleClass('active', hasChanged);
         });
 
         $body.find('#cancelManageStatusBtn').on('click', function() {
             $statusSelect.val(initialStatus);
+            $statusActionSection.removeClass('active');
             $statusActions.removeClass('active');
         });
 
         $body.find('#confirmManageStatusBtn').on('click', function() {
             var selectedStatus = $statusSelect.val();
             if (!selectedStatus || selectedStatus === initialStatus) {
+                $statusActionSection.removeClass('active');
                 $statusActions.removeClass('active');
                 return;
             }
@@ -362,7 +367,7 @@ $(document).ready(function() {
                 '<button type="button" id="cancelOrderBtn" class="login-btn" style="background: #dc3545;">Hủy đơn</button>' +
                 '</div></div>';
         } else if (canEditManageStatus(currentStatus)) {
-            actionsHtml = '<div class="order-detail-section">' +
+            actionsHtml = '<div id="manageOrderStatusActionSection" class="order-detail-section manage-order-status-action-section">' +
                 '<h3 class="order-detail-section-title">Thao tác</h3>' +
                 '<div id="manageOrderStatusActions" class="manage-order-status-actions">' +
                 '<button type="button" id="confirmManageStatusBtn" class="login-btn" style="background: var(--primary-green);">Xác nhận thay đổi</button>' +
