@@ -58,12 +58,12 @@
             </div>
 
             {% if can_use_cart %}
-              <div class="product-actions" style="position: fixed; bottom: 0; background-color: var(--white); padding: 20px; border-top: 1px solid var(--border-color);">
+              <div class="product-actions">
                 <button type="button" id="modal-add-to-cart-btn" class="btn-add-cart">Thêm vào giỏ</button>
-                <a href="{{ url_for('web.cart') }}" class="btn-view-cart" style="width: 250px;">Xem giỏ hàng</a>
+                <a href="{{ url_for('web.cart') }}" class="btn-view-cart">Xem giỏ hàng</a>
               </div>
             {% else %}
-              <div class="product-actions" style="position: fixed; bottom: 0; background-color: var(--white); padding: 20px; border-top: 1px solid var(--border-color); text-align: center;">
+              <div class="product-actions product-actions-disabled">
                 <p style="color: var(--text-light); font-size: 14px;">Tài khoản Admin/Staff không thể thêm sản phẩm vào giỏ hàng</p>
               </div>
             {% endif %}

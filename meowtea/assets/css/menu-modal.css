@@ -32,7 +32,7 @@
     height: 100%;
     background-color: var(--white);
     box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
-    overflow-y: auto;
+    overflow: hidden;
     animation: slideInRight 0.3s ease-out;
 }
 
@@ -77,6 +77,10 @@
 .modal-content {
     padding: 20px;
     position: relative;
+    height: 100%;
+    overflow-y: auto;
+    padding-bottom: 112px;
+    box-sizing: border-box;
 }
 
 .modal-loading {
@@ -340,6 +344,20 @@
     display: flex;
     gap: 12px;
     margin-top: 0;
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    width: min(100%, 500px);
+    box-sizing: border-box;
+    background-color: var(--white);
+    padding: 20px;
+    border-top: 1px solid var(--border-color);
+    z-index: 20;
+}
+
+.modal-product-info .product-actions-disabled {
+    justify-content: center;
+    text-align: center;
 }
 
 .modal-product-info .btn-add-cart {
@@ -355,6 +373,11 @@
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    white-space: nowrap;
 }
 
 .modal-product-info .btn-add-cart:hover {
@@ -374,15 +397,17 @@
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
 }
 
 .modal-product-info .btn-view-cart:hover {
     background-color: #0f3a1f;
-    transform: translateY(-2px);
     text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
 }
 
 /* Responsive for modal */
