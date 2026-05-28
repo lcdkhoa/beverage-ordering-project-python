@@ -1,1 +1,1 @@
-"""Database bootstrap helpers for the Flask migration."""
+"""Database bootstrap helpers for the Flask app."""

@@ -1,22 +1,11 @@
 from pathlib import Path
-import sqlite3
 
 import click
 from flask import Flask, render_template
-from sqlalchemy import event
-from sqlalchemy.engine import Engine
 
 from .config import Config
 from .extensions import db
 from .utils import format_currency, render_stars
-
-
-@event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, _connection_record):
-    if isinstance(dbapi_connection, sqlite3.Connection):
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON")
-        cursor.close()
 
 
 def create_app(config_object=Config):
@@ -29,8 +18,6 @@ def create_app(config_object=Config):
         template_folder=str(package_dir / "templates"),
     )
     app.config.from_object(config_object)
-    Path(app.instance_path).mkdir(parents=True, exist_ok=True)
-    Path(package_dir.parent / "instance").mkdir(parents=True, exist_ok=True)
 
     db.init_app(app)
 
@@ -44,7 +31,7 @@ def create_app(config_object=Config):
 
     @app.get("/health")
     def health():
-        return {"success": True, "message": "MeowTea Flask migration is running"}
+        return {"success": True, "message": "MeowTea Flask app is running"}
 
     return app
 
@@ -72,23 +59,16 @@ def register_blueprints(app: Flask):
 
 
 def register_cli(app: Flask):
-    @app.cli.command("init-db")
+    @app.cli.command("seed-db")
     @click.option("--drop", is_flag=True, help="Drop existing tables before creating schema.")
-    def init_db(drop: bool):
+    def seed_db(drop: bool):
         from .database.seed import seed_database
 
         if drop:
             db.drop_all()
         db.create_all()
         seed_database()
-        click.echo("SQLite schema and seed data are ready.")
-
-    @app.cli.command("migrate-product-options")
-    def migrate_product_options():
-        from .database.migrate_product_options import migrate_product_options_from_groups
-
-        created = migrate_product_options_from_groups()
-        click.echo(f"Product option migration complete. Created {created} rows.")
+        click.echo("Database schema and seed data are ready.")
 
     @app.cli.command("verify-seed")
     def verify_seed():
