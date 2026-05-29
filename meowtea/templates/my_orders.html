@@ -58,12 +58,10 @@
       </div>
 
       <div class="orders-container" style="background: var(--white); border-radius: 30px; padding: 30px; box-shadow: var(--shadow);">
-        <div id="myOrdersLoading" class="orders-loading" style="display: none;">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
-            <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="0.75"/>
-          </svg>
-          <p>Đang tải đơn hàng...</p>
+        <div id="myOrdersLoading" style="display: none;">
+          {% with loading_text="Đang tải đơn hàng...", loading_class="app-inline-loader--panel" %}
+            {% include "partials/loading_inline.html" %}
+          {% endwith %}
         </div>
         <div id="myOrdersEmpty" class="orders-empty" style="display: none;">
           <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

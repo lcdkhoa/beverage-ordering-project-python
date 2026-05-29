@@ -1,5 +1,24 @@
 $(document).ready(function() {
 
+    function startTopLoading() {
+        return window.AppLoading ? window.AppLoading.start() : function() {};
+    }
+
+    function renderInlineLoading($target, message, modifierClass) {
+        if (window.AppLoading) {
+            window.AppLoading.renderInline($target, message, modifierClass);
+        } else {
+            $target.html('<div class="order-detail-loading">' + escapeHtml(message || 'Đang tải...') + '</div>');
+        }
+    }
+
+    function markContentReady($target) {
+        $target.addClass('app-content-swap');
+        setTimeout(function() {
+            $target.removeClass('app-content-swap');
+        }, 220);
+    }
+
     loadMyOrders(1);
 
 
@@ -62,6 +81,7 @@ $(document).ready(function() {
         var $list = $('#myOrdersList');
         var $pagination = $('#myOrdersPagination');
 
+        renderInlineLoading($loading, 'Đang tải đơn hàng...', 'app-inline-loader--panel');
         $loading.show();
         $empty.hide();
         $list.hide();
@@ -75,6 +95,7 @@ $(document).ready(function() {
             search: $('#myOrderSearchInput').val().trim() || ''
         };
 
+        var finishLoading = startTopLoading();
         $.ajax({
             url: '/api/order/get',
             method: 'GET',
@@ -85,6 +106,7 @@ $(document).ready(function() {
                 if (res.success && res.orders && res.orders.length > 0) {
                     renderMyOrders(res.orders);
                     renderMyOrdersPagination(res);
+                    markContentReady($list);
                     $list.show();
                     if (res.total_pages > 1) {
                         $pagination.show();
@@ -107,7 +129,8 @@ $(document).ready(function() {
                 showSnackBar('failed', 'Có lỗi xảy ra khi tải đơn hàng. Vui lòng thử lại.');
                 $loading.hide();
                 $empty.show();
-            }
+            },
+            complete: finishLoading
         });
     }
 
@@ -177,9 +200,9 @@ $(document).ready(function() {
     function openMyOrderDetail(orderId) {
         var $modal = $('#myOrderDetailModal');
         var $body = $('#myOrderDetailBody');
-        $body.html('<div class="order-detail-loading">Đang tải...</div>');
-        $modal.show();
+        $body.empty();
 
+        var finishLoading = startTopLoading();
         $.ajax({
             url: '/order-detail-view',
             method: 'GET',
@@ -188,11 +211,14 @@ $(document).ready(function() {
                 $body.html(html);
 
                 initCollapsibleSections();
+                $modal.fadeIn(140);
+                markContentReady($body);
             },
             error: function() {
                 showSnackBar('failed', 'Có lỗi xảy ra. Vui lòng thử lại.');
                 $body.html('<p class="order-detail-error">Có lỗi xảy ra. Vui lòng thử lại.</p>');
-            }
+            },
+            complete: finishLoading
         });
     }
 

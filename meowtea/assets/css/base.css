@@ -25,6 +25,10 @@ body {
   background-color: var(--white);
 }
 
+body.app-is-navigating {
+  cursor: progress;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -41,6 +45,116 @@ img {
   max-width: 100%;
   height: auto;
   display: block;
+}
+
+/* ===== APP LOADING ===== */
+.app-top-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20000;
+  height: 3px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.app-top-loader.active,
+.app-top-loader.finishing {
+  opacity: 1;
+}
+
+.app-top-loader-track {
+  width: 100%;
+  height: 100%;
+  background: rgba(26, 77, 46, 0.08);
+  overflow: hidden;
+}
+
+.app-top-loader-bar {
+  width: 100%;
+  height: 100%;
+  transform: scaleX(var(--app-loader-progress, 0));
+  transform-origin: left center;
+  background: linear-gradient(90deg, #1a4d2e 0%, #48a06a 55%, #e2c35b 100%);
+  box-shadow: 0 0 14px rgba(72, 160, 106, 0.55);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.app-top-loader.finishing .app-top-loader-bar {
+  transform: scaleX(1);
+}
+
+.app-inline-loader {
+  width: 100%;
+  min-height: 124px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 28px 20px;
+  color: var(--text-light);
+  font-size: 15px;
+  animation: appLoaderFadeIn 0.18s ease both;
+}
+
+.app-inline-loader--compact {
+  min-height: 72px;
+  padding: 18px 12px;
+}
+
+.app-inline-loader--panel {
+  min-height: 150px;
+}
+
+.app-inline-loader-mark {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 3px solid rgba(26, 77, 46, 0.14);
+  border-top-color: var(--primary-green);
+  border-right-color: #48a06a;
+  flex: 0 0 auto;
+  animation: appLoaderSpin 0.75s linear infinite;
+}
+
+.app-inline-loader-text {
+  font-weight: 600;
+}
+
+.app-content-swap {
+  animation: appContentSwap 0.2s ease both;
+}
+
+@keyframes appLoaderSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes appLoaderFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes appContentSwap {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ===== SECTION STYLES ===== */

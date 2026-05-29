@@ -66,7 +66,7 @@ $(document).ready(function () {
 
 
   $("#backToLoginBtn").on("click", function () {
-    window.location.href = "/login";
+    window.AppLoading ? window.AppLoading.go("/login") : (window.location.href = "/login");
   });
 });
 

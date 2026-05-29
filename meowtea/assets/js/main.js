@@ -59,13 +59,9 @@ $(document).ready(function () {
     const $loading = $("#modal-loading");
     const $content = $("#modal-product-content");
 
-
-    $modal.addClass("active");
-    $("body").css("overflow", "hidden");
-
-
-    $loading.show();
+    const finishLoading = window.AppLoading ? window.AppLoading.start() : function () {};
     $content.hide();
+    $loading.hide();
 
 
     $.ajax({
@@ -73,21 +69,26 @@ $(document).ready(function () {
       method: "GET",
       dataType: "json",
       success: function (response) {
-        $loading.hide();
         if (response.success && response.data) {
           renderProductModal(response.data);
+          $modal.addClass("active");
+          $("body").css("overflow", "hidden");
           $content.show();
+          $content.addClass("app-content-swap");
+          setTimeout(function () {
+            $content.removeClass("app-content-swap");
+          }, 220);
         } else {
           showSnackBar('failed', "Không thể tải thông tin sản phẩm: " + (response.message || "Lỗi không xác định"));
           closeProductModal();
         }
       },
       error: function (xhr, status, error) {
-        $loading.hide();
         console.error("Error loading product:", error);
         showSnackBar('failed', "Có lỗi xảy ra khi tải sản phẩm. Vui lòng thử lại.");
         closeProductModal();
       },
+      complete: finishLoading,
     });
   }
 

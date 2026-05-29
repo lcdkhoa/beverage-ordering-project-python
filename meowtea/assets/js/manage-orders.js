@@ -2,6 +2,25 @@ $(document).ready(function() {
     const isAdmin = String($('#manageOrdersList').data('is-admin')) === 'true';
     let currentManageOrdersPage = 1;
 
+    function startTopLoading() {
+        return window.AppLoading ? window.AppLoading.start() : function() {};
+    }
+
+    function renderInlineLoading($target, message, modifierClass) {
+        if (window.AppLoading) {
+            window.AppLoading.renderInline($target, message, modifierClass);
+        } else {
+            $target.html('<div class="order-detail-loading">' + escapeHtml(message || 'Đang tải...') + '</div>');
+        }
+    }
+
+    function markContentReady($target) {
+        $target.addClass('app-content-swap');
+        setTimeout(function() {
+            $target.removeClass('app-content-swap');
+        }, 220);
+    }
+
     loadManageOrders(1);
     loadUserFilter();
 
@@ -82,18 +101,23 @@ $(document).ready(function() {
     }
 
 
-    function loadManageOrders(page) {
+    function loadManageOrders(page, options) {
+        options = options || {};
         page = page || 1;
         currentManageOrdersPage = page;
+        var isBackgroundRefresh = Boolean(options.background);
         var $loading = $('#manageOrdersLoading');
         var $empty = $('#manageOrdersEmpty');
         var $list = $('#manageOrdersList');
         var $pagination = $('#manageOrdersPagination');
 
-        $loading.show();
-        $empty.hide();
-        $list.hide();
-        $pagination.hide();
+        if (!isBackgroundRefresh) {
+            renderInlineLoading($loading, 'Đang tải đơn hàng...', 'app-inline-loader--panel');
+            $loading.show();
+            $empty.hide();
+            $list.hide();
+            $pagination.hide();
+        }
 
         var params = {
             page: page,
@@ -104,6 +128,7 @@ $(document).ready(function() {
             search: $('#manageOrderSearchInput').val().trim() || ''
         };
 
+        var finishLoading = startTopLoading();
         $.ajax({
             url: '/api/order/get-all',
             method: 'GET',
@@ -114,9 +139,15 @@ $(document).ready(function() {
                 if (res.success && res.orders && res.orders.length > 0) {
                     renderManageOrders(res.orders);
                     renderManageOrdersPagination(res);
+                    if (!isBackgroundRefresh) {
+                        markContentReady($list);
+                    }
+                    $empty.hide();
                     $list.show();
                     if (res.total_pages > 1) {
                         $pagination.show();
+                    } else {
+                        $pagination.hide();
                     }
                 } else {
 
@@ -126,14 +157,19 @@ $(document).ready(function() {
                     } else {
                         $empty.find('p').text('Không có đơn hàng nào');
                     }
+                    $list.hide();
+                    $pagination.hide();
                     $empty.show();
                 }
             },
             error: function(xhr, status, err) {
                 console.error('Load manage orders error:', err);
                 $loading.hide();
-                $empty.show();
-            }
+                if (!isBackgroundRefresh) {
+                    $empty.show();
+                }
+            },
+            complete: finishLoading
         });
     }
 
@@ -201,13 +237,20 @@ $(document).ready(function() {
     }
 
 
-    function openManageOrderDetail(orderId) {
+    function openManageOrderDetail(orderId, options) {
+        options = options || {};
         var $modal = $('#manageOrderDetailModal');
         var $body = $('#manageOrderDetailBody');
-        $body.html('<div class="order-detail-loading">Đang tải...</div>');
-        $modal.show();
+        var modalIsOpen = $modal.is(':visible');
 
-        $.ajax({
+        if (modalIsOpen) {
+            renderInlineLoading($body, options.loadingMessage || 'Đang tải chi tiết đơn hàng...', 'app-inline-loader--panel');
+        } else {
+            $body.empty();
+        }
+
+        var finishLoading = startTopLoading();
+        return $.ajax({
             url: '/api/order/get-one-admin',
             method: 'GET',
             data: { id: orderId },
@@ -217,6 +260,12 @@ $(document).ready(function() {
                     $body.html(renderManageOrderDetail(res.order));
                     initCollapsibleSections();
                     bindManageOrderDetailActions(orderId, res.order);
+                    if (modalIsOpen) {
+                        $modal.show();
+                    } else {
+                        $modal.fadeIn(140);
+                    }
+                    markContentReady($body);
                 } else {
                     showSnackBar('failed', res.message || 'Không tải được đơn hàng.');
                     $body.html('<p class="order-detail-error">Không tải được đơn hàng.</p>');
@@ -225,7 +274,8 @@ $(document).ready(function() {
             error: function() {
                 showSnackBar('failed', 'Có lỗi xảy ra. Vui lòng thử lại.');
                 $body.html('<p class="order-detail-error">Có lỗi xảy ra. Vui lòng thử lại.</p>');
-            }
+            },
+            complete: finishLoading
         });
     }
 
@@ -450,8 +500,11 @@ $(document).ready(function() {
             success: function(res) {
                 if (res.success) {
                     showSnackBar('success', res.message || 'Cập nhật trạng thái thành công!');
-                    loadManageOrders(currentManageOrdersPage);
-                    openManageOrderDetail(orderId);
+                    openManageOrderDetail(orderId, {
+                        loadingMessage: 'Đang cập nhật chi tiết đơn hàng...'
+                    }).always(function() {
+                        loadManageOrders(currentManageOrdersPage, { background: true });
+                    });
                 } else {
                     var msg = res.message || 'Cập nhật trạng thái thất bại!';
                     var type = (msg.indexOf('Chỉ có thể') !== -1) ? 'warm' : 'failed';

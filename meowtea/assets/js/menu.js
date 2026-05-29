@@ -67,6 +67,7 @@ $(document).ready(function () {
       search: keyword,
     };
 
+    const finishLoading = window.AppLoading ? window.AppLoading.start() : function () {};
     $.ajax({
       url: getApiPath("menu/search"),
       method: "GET",
@@ -83,6 +84,10 @@ $(document).ready(function () {
 
         if (response.contentHtml) {
           $wrapper.html(response.contentHtml);
+          $wrapper.addClass("app-content-swap");
+          setTimeout(function () {
+            $wrapper.removeClass("app-content-swap");
+          }, 220);
         }
 
         updateWrapperData(finalParams);
@@ -91,6 +96,7 @@ $(document).ready(function () {
       error: function () {
 
       },
+      complete: finishLoading,
     });
   }
 

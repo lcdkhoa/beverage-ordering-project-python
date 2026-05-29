@@ -27,15 +27,15 @@
   <section class="categories-section section">
     <div class="container">
       <div class="categories-grid">
-        <div class="category-card" onclick="window.location.href='{{ url_for('web.menu') }}?category=1'">
+        <div class="category-card" onclick="window.AppLoading ? window.AppLoading.go('{{ url_for('web.menu') }}?category=1') : (window.location.href='{{ url_for('web.menu') }}?category=1')">
           <h3 class="category-name">Cà Phê</h3>
           <img src="{{ url_for('static', filename='img/product_catalogue/coffee.png') }}" alt="Cà Phê" class="category-image">
         </div>
-        <div class="category-card" onclick="window.location.href='{{ url_for('web.menu') }}?category=2'">
+        <div class="category-card" onclick="window.AppLoading ? window.AppLoading.go('{{ url_for('web.menu') }}?category=2') : (window.location.href='{{ url_for('web.menu') }}?category=2')">
           <h3 class="category-name">Trà Sữa</h3>
           <img src="{{ url_for('static', filename='img/product_catalogue/milk-tea.jpg') }}" alt="Trà Sữa" class="category-image">
         </div>
-        <div class="category-card" onclick="window.location.href='{{ url_for('web.menu') }}?category=3'">
+        <div class="category-card" onclick="window.AppLoading ? window.AppLoading.go('{{ url_for('web.menu') }}?category=3') : (window.location.href='{{ url_for('web.menu') }}?category=3')">
           <h3 class="category-name">Trà Trái Cây</h3>
           <img src="{{ url_for('static', filename='img/product_catalogue/fruit-tea.png') }}" alt="Trà Trái Cây" class="category-image">
         </div>

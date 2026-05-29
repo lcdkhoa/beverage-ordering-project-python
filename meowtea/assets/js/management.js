@@ -6,6 +6,25 @@ $(document).ready(function () {
   const DEFAULT_SUGAR_ICE_IDS = [1, 2, 3, 4, 5, 6, 7];
   const TOPPING_GROUP_ID = 3;
 
+  function startTopLoading() {
+    return window.AppLoading ? window.AppLoading.start() : function () {};
+  }
+
+  function renderInlineLoading($target, message, modifierClass) {
+    if (window.AppLoading) {
+      window.AppLoading.renderInline($target, message, modifierClass);
+    } else {
+      $target.html('<div class="loading-spinner">' + escapeHtml(message || "Đang tải...") + "</div>");
+    }
+  }
+
+  function markContentReady($target) {
+    $target.addClass("app-content-swap");
+    setTimeout(function () {
+      $target.removeClass("app-content-swap");
+    }, 220);
+  }
+
 
   $(".tab-btn").on("click", function () {
     const tab = $(this).data("tab");
@@ -18,17 +37,19 @@ $(document).ready(function () {
     $(".management-section-content").removeClass("active");
     if (tab === "products") {
       $("#products-section").addClass("active");
+      const $products = $("#products-accordion");
       if (
-        $("#products-accordion").html().trim() === "" ||
-        $("#products-accordion").html().includes("loading-spinner")
+        $products.html().trim() === "" ||
+        $products.find(".app-inline-loader, .loading-spinner").length > 0
       ) {
         loadProducts();
       }
     } else if (tab === "toppings") {
       $("#toppings-section").addClass("active");
+      const $toppings = $("#toppings-table-wrapper");
       if (
-        $("#toppings-table-wrapper").html().trim() === "" ||
-        $("#toppings-table-wrapper").html().includes("loading-spinner")
+        $toppings.html().trim() === "" ||
+        $toppings.find(".app-inline-loader, .loading-spinner").length > 0
       ) {
         loadToppings();
       }
@@ -600,11 +621,12 @@ $(document).ready(function () {
     $("#edit-product-price").val("");
     $("#edit-product-image").val("");
     $("#edit-product-summary").empty();
-    $("#edit-product-options").html('<div class="loading-spinner">Đang tải...</div>');
+    renderInlineLoading($("#edit-product-options"), "Đang tải tùy chọn...", "app-inline-loader--compact");
     switchProductDetailTab("info");
     setProductDetailModalMode(isViewMode);
     $("#edit-product-modal").addClass("active");
 
+    const finishLoading = startTopLoading();
     $.ajax({
       url: apiBasePath + "product-options",
       method: "GET",
@@ -634,12 +656,14 @@ $(document).ready(function () {
           config.selectedOptionValueIds || [],
           { inputName: "option_value_ids[]", readonly: isViewMode }
         );
+        markContentReady($("#edit-product-options"));
         switchProductDetailTab(isViewMode ? "options" : "info");
       },
       error: function () {
         showSnackBar("failed", "Có lỗi xảy ra khi tải thông tin sản phẩm");
         $("#edit-product-modal").removeClass("active");
       },
+      complete: finishLoading,
     });
   }
 
@@ -814,6 +838,10 @@ $(document).ready(function () {
   }
 
   function loadProducts() {
+    const $accordion = $("#products-accordion");
+    renderInlineLoading($accordion, "Đang tải sản phẩm...", "app-inline-loader--panel");
+    const finishLoading = startTopLoading();
+
     $.ajax({
       url: apiBasePath + "products",
       method: "GET",
@@ -821,6 +849,7 @@ $(document).ready(function () {
       success: function (response) {
         if (response.success) {
           renderProducts(response.data);
+          markContentReady($accordion);
         } else {
           showSnackBar("failed", response.message || "Không thể tải danh sách sản phẩm");
           $("#products-accordion").html('<div class="empty-state">Không thể tải danh sách sản phẩm</div>');
@@ -831,6 +860,7 @@ $(document).ready(function () {
         showSnackBar("failed", "Có lỗi xảy ra khi tải danh sách sản phẩm");
         $("#products-accordion").html('<div class="empty-state">Không thể tải danh sách sản phẩm</div>');
       },
+      complete: finishLoading,
     });
   }
 
@@ -1060,6 +1090,10 @@ $(document).ready(function () {
 
 
   function loadToppings() {
+    const $wrapper = $("#toppings-table-wrapper");
+    renderInlineLoading($wrapper, "Đang tải topping...", "app-inline-loader--panel");
+    const finishLoading = startTopLoading();
+
     $.ajax({
       url: apiBasePath + "toppings",
       method: "GET",
@@ -1067,6 +1101,7 @@ $(document).ready(function () {
       success: function (response) {
         if (response.success) {
           renderToppings(response.data);
+          markContentReady($wrapper);
         } else {
           showSnackBar("failed", response.message || "Không thể tải danh sách topping");
           $("#toppings-table-wrapper").html('<div class="empty-state">Không thể tải danh sách topping</div>');
@@ -1077,6 +1112,7 @@ $(document).ready(function () {
         showSnackBar("failed", "Có lỗi xảy ra khi tải danh sách topping");
         $("#toppings-table-wrapper").html('<div class="empty-state">Không thể tải danh sách topping</div>');
       },
+      complete: finishLoading,
     });
   }
 

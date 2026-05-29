@@ -9,7 +9,9 @@
 
     <div class="modal-content">
       <div id="modal-loading" class="modal-loading">
-        <p>Đang tải...</p>
+        {% with loading_text="Đang tải sản phẩm...", loading_class="app-inline-loader--compact" %}
+          {% include "partials/loading_inline.html" %}
+        {% endwith %}
       </div>
 
       <div id="modal-product-content" style="display: none;">

@@ -44,7 +44,7 @@ $(document).ready(function () {
       success: function (response) {
         if (response.success) {
 
-          location.reload();
+          window.AppLoading ? window.AppLoading.reload() : location.reload();
         } else {
           showSnackBar('failed', "Có lỗi xảy ra: " + (response.message || "Vui lòng thử lại"));
         }
@@ -95,7 +95,7 @@ $(document).ready(function () {
       success: function (response) {
         if (response.success) {
 
-          location.reload();
+          window.AppLoading ? window.AppLoading.reload() : location.reload();
         } else {
           showSnackBar('failed', 'Có lỗi xảy ra: ' + (response.message || "Vui lòng thử lại"));
           isDeleting = false;
@@ -235,7 +235,7 @@ $(document).ready(function () {
 
 
 
-    window.location.href = "/checkout";
+    window.AppLoading ? window.AppLoading.go("/checkout") : (window.location.href = "/checkout");
   });
 
 

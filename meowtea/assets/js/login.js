@@ -36,7 +36,7 @@ $(document).ready(function () {
         if (response.success) {
           showSnackBar('success', response.message || "Đăng nhập thành công!");
           setTimeout(function () {
-            window.location.href = "/";
+            window.AppLoading ? window.AppLoading.go("/") : (window.location.href = "/");
           }, 1500);
         } else {
           showSnackBar('failed', response.message || "Đăng nhập thất bại. Vui lòng thử lại.");

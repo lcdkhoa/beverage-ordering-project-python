@@ -20,7 +20,9 @@
 
       <div class="management-content">
         <div id="promotions-table-wrapper" class="promotions-table-wrapper">
-          <div class="loading-spinner">Đang tải...</div>
+          {% with loading_text="Đang tải khuyến mãi...", loading_class="app-inline-loader--panel" %}
+            {% include "partials/loading_inline.html" %}
+          {% endwith %}
         </div>
       </div>
     </div>

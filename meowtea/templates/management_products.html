@@ -27,7 +27,9 @@
         </div>
         <div class="management-content">
           <div id="products-accordion" class="products-accordion">
-            <div class="loading-spinner">Đang tải...</div>
+            {% with loading_text="Đang tải sản phẩm...", loading_class="app-inline-loader--panel" %}
+              {% include "partials/loading_inline.html" %}
+            {% endwith %}
           </div>
         </div>
       </div>
@@ -44,7 +46,9 @@
         </div>
         <div class="management-content">
           <div id="toppings-table-wrapper" class="toppings-table-wrapper">
-            <div class="loading-spinner">Đang tải...</div>
+            {% with loading_text="Đang tải topping...", loading_class="app-inline-loader--panel" %}
+              {% include "partials/loading_inline.html" %}
+            {% endwith %}
           </div>
         </div>
       </div>
@@ -134,7 +138,9 @@
                 <div class="product-detail-summary" id="edit-product-summary"></div>
               </div>
               <div id="edit-product-options" class="product-options-picker">
-                <div class="loading-spinner">Đang tải tùy chọn...</div>
+                {% with loading_text="Đang tải tùy chọn...", loading_class="app-inline-loader--compact" %}
+                  {% include "partials/loading_inline.html" %}
+                {% endwith %}
               </div>
             </div>
 

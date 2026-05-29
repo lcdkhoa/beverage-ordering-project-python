@@ -1,6 +1,25 @@
 $(document).ready(function () {
   const apiBasePath = getApiBasePath();
 
+  function startTopLoading() {
+    return window.AppLoading ? window.AppLoading.start() : function () {};
+  }
+
+  function renderInlineLoading($target, message, modifierClass) {
+    if (window.AppLoading) {
+      window.AppLoading.renderInline($target, message, modifierClass);
+    } else {
+      $target.html('<div class="loading-spinner">' + escapeHtml(message || "Đang tải...") + "</div>");
+    }
+  }
+
+  function markContentReady($target) {
+    $target.addClass("app-content-swap");
+    setTimeout(function () {
+      $target.removeClass("app-content-swap");
+    }, 220);
+  }
+
 
   loadPromotions();
 
@@ -277,6 +296,10 @@ $(document).ready(function () {
 
 
   function loadPromotions() {
+    const $wrapper = $("#promotions-table-wrapper");
+    renderInlineLoading($wrapper, "Đang tải khuyến mãi...", "app-inline-loader--panel");
+    const finishLoading = startTopLoading();
+
     $.ajax({
       url: apiBasePath + "promotions",
       method: "GET",
@@ -284,6 +307,7 @@ $(document).ready(function () {
       success: function (response) {
         if (response.success) {
           renderPromotions(response.data);
+          markContentReady($wrapper);
         } else {
           showSnackBar("failed", response.message || "Không thể tải danh sách khuyến mãi");
           $("#promotions-table-wrapper").html('<div class="empty-state">Không thể tải danh sách khuyến mãi</div>');
@@ -294,6 +318,7 @@ $(document).ready(function () {
         showSnackBar("failed", "Có lỗi xảy ra khi tải danh sách khuyến mãi");
         $("#promotions-table-wrapper").html('<div class="empty-state">Không thể tải danh sách khuyến mãi</div>');
       },
+      complete: finishLoading,
     });
   }
 

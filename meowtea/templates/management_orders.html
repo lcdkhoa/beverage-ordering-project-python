@@ -87,10 +87,11 @@ endblock %} {% block styles %}
     >
       <div
         id="manageOrdersLoading"
-        class="orders-loading"
         style="display: none"
       >
-        <p>Đang tải đơn hàng...</p>
+        {% with loading_text="Đang tải đơn hàng...", loading_class="app-inline-loader--panel" %}
+          {% include "partials/loading_inline.html" %}
+        {% endwith %}
       </div>
       <div id="manageOrdersEmpty" class="orders-empty" style="display: none">
         <p>Không có đơn hàng nào</p>
@@ -126,5 +127,5 @@ endblock %} {% block styles %}
   </div>
 </div>
 {% endblock %} {% block scripts %}
-<script src="{{ url_for('static', filename='js/manage-orders.js') }}"></script>
+<script src="{{ url_for('static', filename='js/manage-orders.js', v='status-loading-20260529') }}"></script>
 {% endblock %}

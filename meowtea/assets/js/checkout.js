@@ -389,8 +389,8 @@ $(document).ready(function () {
       success: function (response) {
         if (response.success) {
 
-          window.location.href =
-            "/order-result?order_id=" + response.order_id;
+          const orderResultUrl = "/order-result?order_id=" + response.order_id;
+          window.AppLoading ? window.AppLoading.go(orderResultUrl) : (window.location.href = orderResultUrl);
         } else {
           showSnackBar("failed", "Có lỗi xảy ra: " + (response.message || "Vui lòng thử lại"));
           $("#pay-now-btn").prop("disabled", false).text("Thanh toán ngay");
